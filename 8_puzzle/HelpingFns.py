@@ -34,44 +34,68 @@ def method_choice():
 #----------------------------------------------------------------------------------------------------
 def get_neighbors(state):
     neighbors = []
-    index_of_blank = state.index(0)  # find the blank space (0)
-    row, col = index_of_blank // 3, index_of_blank % 3
-    # Define the possible moves (Up, Down, Left, Right)
-    moves = {
-        'Up': (-1, 0),
-        'Down': (1, 0),
-        'Left': (0, -1),
-        'Right': (0, 1)
+    index_of_blank = state.index(0)  # bta5od list of states[1,2,5,3,....] w b3deen get the index of 0 (blank space)
+    row, col = index_of_blank // 3, index_of_blank % 3 
+
+    # Dectionary of all possible moves
+    moves = {                                                       #c1 c2  c3
+                                                                    #[0, 1, 2]   <-- Row 0
+                                                                    #[3, 4, 5]   <-- Row 1
+                                                                    #[6, 7, 8]   <-- Row 2#
+        'Up': (-1, 0), # reduce the row index by one 
+        'Down': (1, 0), # increse the row index by one 
+        'Left': (0, -1), # reduce the coumn index by one 
+        'Right': (0, 1)  # increse the column index by one 
     }
-    for move, (dr, dc) in moves.items():
-        new_row, new_col = row + dr, col + dc
-        if 0 <= new_row < 3 and 0 <= new_col < 3:  # move is within bounds
-            new_blank_index = new_row * 3 + new_col
+    for (row_change,column_change) in moves.values():
+        new_row, new_col = row + row_change, col + column_change #apply changes to blank
+
+        if 0 <= new_row < 3 and 0 <= new_col < 3:  # check that we are within board bounds
+            new_blank_index = new_row * 3 + new_col # acquire new index
             new_state = state[:]
-            new_state[index_of_blank], new_state[new_blank_index] = new_state[new_blank_index], new_state[
-                index_of_blank]
-            neighbors.append(new_state)
+            new_state[index_of_blank], new_state[new_blank_index] = new_state[new_blank_index], new_state[index_of_blank] #swapping with adjacent
+            neighbors.append(new_state) # append the resulting state 
     return neighbors
 # ----------------------------------------------------------------------------------------------------
 # Heuristic
-def manhattan_distance(state):
+def calc_heuritic(state,flag):
+    '''
+    state(list)
+    flag(BOOl) 3lshan a3raf use which heuristic
+    '''
     distance = 0
+   
     for index, value in enumerate(state):
         if value == 0:
             continue
         target_row, target_col = value // 3, value % 3
         current_row, current_col = index // 3, index % 3
-        distance += abs(current_row - target_row) + abs(current_col - target_col)
+        if flag:
+            distance += math.sqrt((current_row - target_row) ** 2 + (current_col - target_col) ** 2) # flag = 1 for eucleadian distance
+        else:
+            distance += abs(current_row - target_row) + abs(current_col - target_col)
     return distance
-# ----------------------------------------------------------------------------------------------------
-# Heuristic
-def euclidean_distance(state):
-    distance = 0
-    for index, value in enumerate(state):
-        if value == 0:
-            continue
-        target_row, target_col = value // 3, value % 3
-        current_row, current_col = index // 3, index % 3
-        distance += math.sqrt((current_row - target_row) ** 2 + (current_col - target_col) ** 2)
-    return distance
-# ----------------------------------------------------------------------------------------------------
+    
+def get_neighbors_for_Astar(state):
+    neighbors = []
+    index_of_blank = state.index(0)  # bta5od list of states[1,2,5,3,....] w b3deen get the index of 0 (blank space)
+    row, col = index_of_blank // 3, index_of_blank % 3 
+
+    # Dectionary of all possible moves
+    moves = {                                                       #c1 c2  c3
+                                                                    #[0, 1, 2]   <-- Row 0
+                                                                    #[3, 4, 5]   <-- Row 1
+                                                                    #[6, 7, 8]   <-- Row 2#
+        'Up': (-1, 0), # reduce the row index by one 
+        'Down': (1, 0), # increse the row index by one 
+        'Left': (0, -1), # reduce the coumn index by one 
+        'Right': (0, 1)  # increse the column index by one 
+    }
+    for (row_change,column_change) in moves.values():
+        new_row, new_col = row + row_change, col + column_change #apply changes to blank
+
+        if 0 <= new_row < 3 and 0 <= new_col < 3:  # check that we are within board bounds
+            neighbor=[new_row,new_col]
+            neighbors.append(neighbor) # append the resulting state 
+    return neighbors
+
