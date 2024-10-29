@@ -58,7 +58,7 @@ def get_neighbors(state):
     return neighbors
 # ----------------------------------------------------------------------------------------------------
 # Heuristic
-def calc_heuritic(state,flag):
+def calc_heuristic(state,flag):
     '''
     state(list)
     flag(BOOl) 3lshan a3raf use which heuristic
@@ -76,10 +76,12 @@ def calc_heuritic(state,flag):
             distance += abs(current_row - target_row) + abs(current_col - target_col)
     return distance
     
-def get_neighbors_for_Astar(state):
+def get_neighbors(state):
     neighbors = []
+    neighbor_states=[]
     index_of_blank = state.index(0)  # bta5od list of states[1,2,5,3,....] w b3deen get the index of 0 (blank space)
     row, col = index_of_blank // 3, index_of_blank % 3 
+
     # Dectionary of all possible moves
     moves = {                                                       #c1 c2  c3
                                                                     #[0, 1, 2]   <-- Row 0
@@ -92,7 +94,11 @@ def get_neighbors_for_Astar(state):
     }
     for (row_change,column_change) in moves.values():
         new_row, new_col = row + row_change, col + column_change #apply changes to blank
+
         if 0 <= new_row < 3 and 0 <= new_col < 3:  # check that we are within board bounds
-            neighbor=[new_row,new_col]
-            neighbors.append(neighbor) # append the resulting state 
-    return neighbors
+            neighbors.append([new_row,new_col])
+            new_blank_index = new_row * 3 + new_col # acquire new index
+            new_state = state[:]
+            new_state[index_of_blank], new_state[new_blank_index] = new_state[new_blank_index], new_state[index_of_blank] #swapping with adjacent
+            neighbor_states.append(new_state) # append the resulting state 
+    return neighbors, neighbor_states
