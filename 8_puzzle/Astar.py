@@ -21,7 +21,7 @@ def Astar(start_state,flag):
       visited.add(tuple(current_state)) # add the list of visited states
     
         #loop through neighbors
-      for neighbor in HelpingFns.get_neighbors(current_state): # loop through all resulting states from swapping with neighbors
+      for neighbor in HelpingFns.get_neighbors_for_Astar(current_state): # loop through all resulting states from swapping with neighbors
          neighbor_tuple=tuple(neighbor)
          
          #calculate new cost to visiting any neighbor = old cost plus one 3lshan its only one step away
