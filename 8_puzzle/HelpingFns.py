@@ -52,3 +52,26 @@ def get_neighbors(state):
                 index_of_blank]
             neighbors.append(new_state)
     return neighbors
+# ----------------------------------------------------------------------------------------------------
+#heuristic
+def manhattan_distance(state):
+    distance = 0
+    for index, value in enumerate(state):
+        if value == 0:
+            continue
+        target_row, target_col = value // 3, value % 3 # rows are multiples of three wl ba2y barmeeh fl column
+        current_row, current_col = index // 3, index % 3
+        distance += abs(current_row - target_row) + abs(current_col - target_col)
+    return distance
+# ----------------------------------------------------------------------------------------------------
+# Heuristic
+def euclidean_distance(state):
+    distance = 0
+    for index, value in enumerate(state):
+        if value == 0:
+            continue
+        target_row, target_col = value // 3, value % 3
+        current_row, current_col = index // 3, index % 3
+        distance += math.sqrt((current_row - target_row) ** 2 + (current_col - target_col) ** 2)
+    return distance
+# ----------------------------------------------------------------------------------------------------
