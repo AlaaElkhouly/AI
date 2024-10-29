@@ -18,7 +18,7 @@ if c.is_solvable(INITIAL_STATE):
         d.DFS(INITIAL_STATE,GOAL_STATE)
     elif x==3:
         MAX_DEPTH=int(input(f"please enter max depth:\n"))
-        i.IDFS(INITIAL_STATE,MAX_DEPTH)
+        i.IDFS(INITIAL_STATE,GOAL_STATE,MAX_DEPTH)
     else:
         a.Astar(INITIAL_STATE)
 else:
