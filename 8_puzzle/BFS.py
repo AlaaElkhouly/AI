@@ -1,3 +1,7 @@
+import time
+import HelpingFns as c
+from collections import deque
+
 def BFS(start_state):
     print("Breadth-First Search (BFS) Running.....")
     start_time = time.time()
@@ -10,7 +14,7 @@ def BFS(start_state):
             print(f"Time taken: {round(time.time() - start_time,5)} seconds")
             return path
         visited.add(tuple(current_state))
-        for neighbor in get_neighbors(current_state):
+        for neighbor in c.get_neighbors(current_state):
                 if tuple(neighbor) not in visited:
                     queue.append((neighbor, path + [neighbor]))
     print("Sorry, no path found :(")
