@@ -8,7 +8,6 @@ import HelpingFns as c
 import DFS as d
 import IDFS as i
 GOAL_STATE = [0, 1, 2, 3, 4, 5, 6, 7, 8]
-print("Please enter 9 elements (0 to 8) for the 8-puzzle game initial state:")
 INITIAL_STATE=c.input_array()
 if c.is_solvable(INITIAL_STATE):
     x=c.method_choice()

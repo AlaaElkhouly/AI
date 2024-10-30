@@ -1,11 +1,13 @@
 import math
 
 def input_array():
-    n=int(input("Please enter 9 elements (0 to 8) for the 8-puzzle game initial state:"))
-    INITIAL_STATE=[int(digit) for digit in str(n)]
-    while 9 in INITIAL_STATE or len(INITIAL_STATE)!=9 or len(INITIAL_STATE)!=len(set(INITIAL_STATE)):
-       n=int(input("enter the starting board states (1-8)"))
-       INITIAL_STATE=[int(digit) for digit in str(n)]
+    while 1:
+        n=int(input("Please enter 9 elements (0 to 8) for the 8-puzzle game initial state:"))
+        INITIAL_STATE=[int(digit) for digit in str(n)]
+        if 9 in INITIAL_STATE or len(INITIAL_STATE)!=9 or len(INITIAL_STATE)!=len(set(INITIAL_STATE)):
+            print("Notice it must contain 9 unrepeated numbers from 0-8!")
+        else:
+            break
     print("State Entered:",INITIAL_STATE)
     return INITIAL_STATE
 
