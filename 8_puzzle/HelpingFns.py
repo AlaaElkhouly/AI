@@ -34,31 +34,6 @@ def method_choice():
             break
     return x
 #----------------------------------------------------------------------------------------------------
-def get_neighbors(state):
-    neighbors = []
-    index_of_blank = state.index(0)  # bta5od list of states[1,2,5,3,....] w b3deen get the index of 0 (blank space)
-    row, col = index_of_blank // 3, index_of_blank % 3 
-
-    # Dectionary of all possible moves
-    moves = {                                                       #c1 c2  c3
-                                                                    #[0, 1, 2]   <-- Row 0
-                                                                    #[3, 4, 5]   <-- Row 1
-                                                                    #[6, 7, 8]   <-- Row 2#
-        'Up': (-1, 0), # reduce the row index by one 
-        'Down': (1, 0), # increse the row index by one 
-        'Left': (0, -1), # reduce the coumn index by one 
-        'Right': (0, 1)  # increse the column index by one 
-    }
-    for (row_change,column_change) in moves.values():
-        new_row, new_col = row + row_change, col + column_change #apply changes to blank
-
-        if 0 <= new_row < 3 and 0 <= new_col < 3:  # check that we are within board bounds
-            new_blank_index = new_row * 3 + new_col # acquire new index
-            new_state = state[:]
-            new_state[index_of_blank], new_state[new_blank_index] = new_state[new_blank_index], new_state[index_of_blank] #swapping with adjacent
-            neighbors.append(new_state) # append the resulting state 
-    return neighbors
-# ----------------------------------------------------------------------------------------------------
 # Heuristic
 def calc_heuristic(state,flag):
     '''
@@ -78,7 +53,7 @@ def calc_heuristic(state,flag):
             distance += abs(current_row - target_row) + abs(current_col - target_col)
     return distance
     
-def get_neighbors_Astar(state):
+def get_neighbors(state):
     neighbors = []
     neighbor_states=[]
     moves_made=[]
