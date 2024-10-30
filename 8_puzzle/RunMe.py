@@ -24,3 +24,5 @@ if c.is_solvable(INITIAL_STATE):
         a.Astar(INITIAL_STATE,flag)
 else:
     print("The Puzzle you have entered is unsolvable")
+
+#alaa is hot
