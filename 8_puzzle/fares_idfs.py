@@ -1,8 +1,9 @@
 import time
 
 MOVES = {'Up': (-1, 0), 'Down': (1, 0), 'Left': (0, -1), 'Right': (0, 1)}
+goal_state = ((0, 1, 2), (3, 4, 5), (6, 7, 8))
 
-def depth_first_search(initial_state, goal_state, max_depth):
+def depth_first_search(initial_state, max_depth):
     frontier = [(initial_state, [])]
     explored = set()
     nodes_expanded = 0
@@ -44,7 +45,7 @@ def depth_first_search(initial_state, goal_state, max_depth):
 
 
 
-def iterative_DFS(initial_state, goal_state, max_depth):
+def iterative_DFS(initial_state,max_depth):
     start_time = time.time()
     for depth in range(max_depth + 1):
         result = depth_first_search(initial_state, goal_state, depth)
@@ -56,9 +57,6 @@ def iterative_DFS(initial_state, goal_state, max_depth):
             nodes_expanded= result['nodes_expanded']
             depth= result['search_depth']
             return path[-1],path,depth,cost,nodes_expanded
-    return
+    return 
 
-GOAL_STATE = ((0, 1, 2), (3, 4, 5), (6, 7, 8))
-initial_state = ((1, 2, 5), (3, 4, 0), (6, 7, 8))
 
-result = iterative_DFS(initial_state, GOAL_STATE, max_depth=30)

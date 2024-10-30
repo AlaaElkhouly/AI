@@ -6,7 +6,8 @@ import Astar as a
 import BFS as b
 import HelpingFns as c
 import DFS as d
-import IDFS as i
+import fares_idfs
+
 GOAL_STATE = [0, 1, 2, 3, 4, 5, 6, 7, 8]
 INITIAL_STATE=c.input_array()
 if c.is_solvable(INITIAL_STATE):
@@ -17,7 +18,7 @@ if c.is_solvable(INITIAL_STATE):
         d.DFS(INITIAL_STATE)
     elif x==3:
         MAX_DEPTH=int(input(f"please enter max depth:\n"))
-        i.IDFS(INITIAL_STATE,MAX_DEPTH)
+        fares_idfs.iterative_DFS(INITIAL_STATE,MAX_DEPTH)
     else:
         flag=input("enter Euclidean or Manhattan")
         a.Astar(INITIAL_STATE,flag)

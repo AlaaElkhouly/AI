@@ -21,6 +21,7 @@ class PuzzleSolverGUI:
         
         # Algorithm selection
         self.algorithm_var = tk.StringVar(value="A*")
+        self.max_depth=tk.IntVar(value=100)
         algo_frame = tk.Frame(self.root) #algorithm slelection window
         algo_frame.pack()# add to root window
         tk.Label(algo_frame, text="Select Algorithm: ").pack(side=tk.LEFT) #prompt user to choose alogrithm
@@ -37,6 +38,7 @@ class PuzzleSolverGUI:
         tk.Button(control_frame, text="Enter Start State", command=self.enter_start_state).pack(side=tk.LEFT)
         tk.Button(control_frame, text="Solve", command=self.solve_puzzle).pack(side=tk.LEFT)
         tk.Button(control_frame, text="Animate Solution", command=self.animate_solution).pack(side=tk.LEFT)
+        tk.Button(control_frame, text="enter max depth", command=self.enter_depth).pack(side=tk.LEFT)
 
     def create_board_grid(self):
         board_frame = tk.Frame(self.root)
@@ -62,7 +64,9 @@ class PuzzleSolverGUI:
                 self.start_state = array  # Update start_state with the valid input
                 print(f"Start state: {self.start_state}")  # Debugging line
                 self.update_board_display(self.start_state)  # Update the display to show the new start state
-                
+
+    def enter_depth(self):
+        self.max_depth=simpledialog.askinteger("max depth for idfs"," enter the max depth default is 100")                
 
     def solve_puzzle(self):
         # Check solvability
@@ -72,6 +76,7 @@ class PuzzleSolverGUI:
 
         algorithm = self.algorithm_var.get()
         heuristic = self.heuristic_var.get() if algorithm == "A*" else None
+        max_depth= self.max_depth.get if algorithm=="IDFS" else None
         start_time = time.time()
         
         
@@ -87,7 +92,7 @@ class PuzzleSolverGUI:
             self.solution_states=path
             cost=len(path)
         if algorithm=="IDFS":
-            current_state,path,depth,cost,nodes_explored=fares_idfs.iterative_DFS(self.start_state)
+            current_state,path,depth,cost,nodes_explored=fares_idfs.iterative_DFS(self.start_state,self.max_depth)
             self.solution_states=path
             
         
