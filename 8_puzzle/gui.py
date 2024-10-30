@@ -4,6 +4,7 @@ import time
 import Astar
 import BFS
 import DFS
+import IDFS
 class PuzzleSolverGUI:
     def __init__(self, root):
         self.root = root #root window
@@ -82,10 +83,13 @@ class PuzzleSolverGUI:
             self.solution_states=path
             cost=len(path)
         if algorithm=="DFS":
-            current_state, path, previous_moves,nodes_explored=DFS(self.start_state)
+            current_state, path, previous_moves,nodes_explored=DFS.DFS(self.start_state)
             self.solution_states=path
             cost=len(path)
-
+        if algorithm=="IDFS":
+            current_state, path, previous_moves,nodes_explored=IDFS.IDFS(self.start_state)
+            self.solution_states=path
+            cost=len(path)
         
         solve_time = time.time() - start_time
         messagebox.showinfo("Solution Found", f"Puzzle solved in {solve_time:.2f} seconds.\n")
@@ -110,7 +114,7 @@ class PuzzleSolverGUI:
         for state in self.solution_states:
             self.update_board_display(state)  # Update the display with the current state
             self.root.update()               # Update the Tkinter GUI window to show changes
-            time.sleep(0.5)                  # Pause for half a second for visualization
+            time.sleep(0.1)                  # Pause for half a second for visualization
 
     def update_board_display(self, state):
         print(f"Updating board display with state: {state}")  # Debugging line
