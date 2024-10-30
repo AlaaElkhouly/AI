@@ -1,19 +1,11 @@
 import math
 
 def input_array():
-    while True: #user will keep re-entering till array is correct
-        array= []
-        for i in range(9):
-            element = int(input(f"Enter element {i+1}: "))
-            array.append(element)
-        if len(set(array))!=len(array): #checking the array has each number written once
-            print("Puzzle has duplicate numbers please re-enter")
-        elif max(array) != 8 or min(array) != 0 : # checking the numbers range from 0(empty) to 8
-            print("puzzle numbers range from 0 to 8 please re-enter")
-        else:
-            print("puzzle array Entered:", array)
-            break
-    return array
+    user_in=input("enter the starting board states (1-9)")
+    integer_list=[int(i) for i in user_in]
+    print(integer_list)
+    return integer_list
+
 #----------------------------------------------------------------------------------------------------
 def is_solvable(state):
     #remove the blank (0)

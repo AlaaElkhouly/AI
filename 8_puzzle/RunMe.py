@@ -20,6 +20,7 @@ if c.is_solvable(INITIAL_STATE):
         MAX_DEPTH=int(input(f"please enter max depth:\n"))
         i.IDFS(INITIAL_STATE,GOAL_STATE,MAX_DEPTH)
     else:
-        a.Astar(INITIAL_STATE)
+        flag=int(input("enter 1 for euclidean or zero for manhattan"))
+        a.Astar(INITIAL_STATE,flag)
 else:
     print("The Puzzle you have entered is unsolvable")

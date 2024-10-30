@@ -6,3 +6,6 @@ print(cost)
 print(current_state)
 print(path)
 print(previous_moves)
+
+
+

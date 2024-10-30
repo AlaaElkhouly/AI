@@ -1,4 +1,5 @@
 import heapq
+import time
 import math
 import HelpingFns as h
 #-------------------HELPING FUNCTIONS--------------------
@@ -27,6 +28,8 @@ def calc_heuristic(state,flag):
 GOAL_STATE = [0, 1, 2, 3, 4, 5, 6, 7, 8]
 
 def Astar(start_state, flag):
+    print("A* Running.....")
+    start_time = time.time()
     # Initialize the priority queue as a min-heap
     priority_queue = []
     
@@ -40,12 +43,13 @@ def Astar(start_state, flag):
     min_cost_to_state = {tuple(start_state): 0}  # Use tuple for hashability
 
     # Start the algorithm sequence
-    while priority_queue:
+    while priority_queue and time.time() <= start_time + 30:
         cost, current_state, path, previous_moves = heapq.heappop(priority_queue)  # Pop the lowest cost state
         
         # Check if we have arrived at the goal
         if current_state == GOAL_STATE:
             print("Path found:", path)
+            print(f"Time taken: {round(time.time() - start_time,5)} seconds")
             return cost, current_state, path, previous_moves
         
         visited.add(tuple(current_state))  # Add the current state to visited
