@@ -12,12 +12,12 @@ INITIAL_STATE=c.input_array()
 if c.is_solvable(INITIAL_STATE):
     x=c.method_choice()
     if x==1:
-        b.BFS(INITIAL_STATE,GOAL_STATE)
+        b.BFS(INITIAL_STATE)
     elif x==2:
-        d.DFS(INITIAL_STATE,GOAL_STATE)
+        d.DFS(INITIAL_STATE)
     elif x==3:
         MAX_DEPTH=int(input(f"please enter max depth:\n"))
-        i.IDFS(INITIAL_STATE,)
+        i.IDFS(INITIAL_STATE,MAX_DEPTH)
     else:
         flag=int(input("enter 1 for euclidean or zero for manhattan"))
         a.Astar(INITIAL_STATE,flag)
