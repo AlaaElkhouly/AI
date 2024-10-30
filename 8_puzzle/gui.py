@@ -47,14 +47,21 @@ class PuzzleSolverGUI:
                 self.board[i][j] = label
 
     def enter_start_state(self):
-        # Prompt user to enter a 9-tile puzzle start state
-        state = simpledialog.askstring("Start State", "Enter the start state (e.g., '1 2 3 4 5 6 7 8 0' for goal state):")
+    # Prompt user to enter a 9-tile puzzle start state
+        state = simpledialog.askstring("Start State", "Enter the start state (e.g., '123456780' for goal state):")
+    
         if state:
-            self.start_state = list(map(int, state.split()))
-            if len(self.start_state) == 9:
-                self.update_board_display(self.start_state)
+        # Convert the input string into a list of integers
+            array = [int(digit) for digit in state]
+        
+        # Check if the array has exactly 9 elements and contains unique numbers from 0 to 8
+            if len(array) != 9 or len(array) != len(set(array)) or any(num < 0 or num > 8 for num in array):
+                messagebox.showerror("Invalid Input", "Please enter exactly 9 digits from 0 to 8.")
             else:
-                messagebox.showerror("Invalid Input", "Please enter exactly 9 numbers.")
+                self.start_state = array  # Update start_state with the valid input
+                print(f"Start state: {self.start_state}")  # Debugging line
+                self.update_board_display(self.start_state)  # Update the display to show the new start state
+                
 
     def solve_puzzle(self):
         # Check solvability
@@ -106,16 +113,17 @@ class PuzzleSolverGUI:
             time.sleep(0.5)                  # Pause for half a second for visualization
 
     def update_board_display(self, state):
-        print(f"Current state: {state}")  # Debugging line to check the type and value of `state`
-        if not isinstance(state, list):
-            print("Error: Expected state to be a list, got:", type(state))
-            return  # Stop execution to avoid the error
+        print(f"Updating board display with state: {state}")  # Debugging line
     
-        # Convert the flat 1D list into the 3x3 display grid
-        for i in range(self.board_size):
-            for j in range(self.board_size):
-                tile = state[i * self.board_size + j]   # Access the tile value from the 1D list
-                self.board[i][j].config(text=str(tile) if tile != 0 else "")
+    # Ensure that state is valid
+        if not isinstance(state, list) or len(state) != 9:
+            print("Error: Invalid state. Expected a list of 9 elements.")
+            return
+    # Convert the flat 1D list into the 3x3 display grid
+        for i in range(3):  # Assuming a 3x3 puzzle
+            for j in range(3):
+                tile = state[i * 3 + j]   # Access the tile value from the 1D list
+                self.board[i][j].config(text=str(tile) if tile != 0 else "")  # Update the display
 
 root = tk.Tk()
 app = PuzzleSolverGUI(root)
