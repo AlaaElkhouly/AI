@@ -35,23 +35,6 @@ def method_choice():
     return x
 #----------------------------------------------------------------------------------------------------
 # Heuristic
-def calc_heuristic(state,flag):
-    '''
-    state(list)
-    flag(BOOl) 3lshan a3raf use which heuristic
-    '''
-    distance = 0
-   
-    for index, value in enumerate(state):
-        if value == 0:
-            continue
-        target_row, target_col = value // 3, value % 3
-        current_row, current_col = index // 3, index % 3
-        if flag:
-            distance += math.sqrt((current_row - target_row) ** 2 + (current_col - target_col) ** 2) # flag = 1 for eucleadian distance
-        else:
-            distance += abs(current_row - target_row) + abs(current_col - target_col)
-    return distance
     
 def get_neighbors(state):
     neighbors = []
