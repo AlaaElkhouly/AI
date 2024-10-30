@@ -32,7 +32,7 @@ def method_choice():
             break
     return x
 #----------------------------------------------------------------------------------------------------
-# Heuristic
+
     
 def get_neighbors(state):
     neighbors = []

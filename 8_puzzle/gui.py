@@ -4,7 +4,7 @@ import time
 import Astar
 import BFS
 import DFS
-import fares_idfs
+
 class PuzzleSolverGUI:
     def __init__(self, root):
         self.root = root #root window
@@ -21,11 +21,11 @@ class PuzzleSolverGUI:
         
         # Algorithm selection
         self.algorithm_var = tk.StringVar(value="A*")
-        self.max_depth=tk.IntVar(value=100)
+        self.time_limit=30 #time limit for algorithms is 30s
         algo_frame = tk.Frame(self.root) #algorithm slelection window
         algo_frame.pack()# add to root window
         tk.Label(algo_frame, text="Select Algorithm: ").pack(side=tk.LEFT) #prompt user to choose alogrithm
-        tk.OptionMenu(algo_frame, self.algorithm_var, "BFS", "DFS", "IDFS", "A*").pack(side=tk.LEFT)
+        tk.OptionMenu(algo_frame, self.algorithm_var, "BFS", "DFS", "A*").pack(side=tk.LEFT)
 
         # Heuristic selection for A*
         self.heuristic_var = tk.StringVar(value="Manhattan")
@@ -51,7 +51,7 @@ class PuzzleSolverGUI:
 
     def enter_start_state(self):
     # Prompt user to enter a 9-tile puzzle start state
-        state = simpledialog.askstring("Start State", "Enter the start state (e.g., '123456780' for goal state):")
+        state = simpledialog.askstring("Start State", "Enter the start state (for example '123456780' for goal state):")
     
         if state:
         # Convert the input string into a list of integers
@@ -69,40 +69,49 @@ class PuzzleSolverGUI:
         self.max_depth=simpledialog.askinteger("max depth for idfs"," enter the max depth default is 100")                
 
     def solve_puzzle(self):
-        # Check solvability
+    # Check solvability
         if not self.is_solvable(self.start_state):
             messagebox.showinfo("Unsolvable", "The entered puzzle state is unsolvable.")
             return
 
         algorithm = self.algorithm_var.get()
         heuristic = self.heuristic_var.get() if algorithm == "A*" else None
-        max_depth= self.max_depth.get if algorithm=="IDFS" else None
+        max_depth = self.max_depth.get() if algorithm == "IDFS" else None
         start_time = time.time()
-        
-        
-        if algorithm=="A*":
-            cost, current_state, path, previous_moves,nodes_explored=Astar.Astar(self.start_state,heuristic)
-            self.solution_states=path
-        if algorithm=="BFS":
-            current_state, path, previous_moves,nodes_explored=BFS.BFS(self.start_state)
-            self.solution_states=path
-            cost=len(path)
-        if algorithm=="DFS":
-            current_state, path, previous_moves,nodes_explored=DFS.DFS(self.start_state)
-            self.solution_states=path
-            cost=len(path)
-        if algorithm=="IDFS":
-            current_state,path,depth,cost,nodes_explored=fares_idfs.iterative_DFS(self.start_state,self.max_depth)
-            self.solution_states=path
-            
-        
-        solve_time = time.time() - start_time
-        messagebox.showinfo("Solution Found", f"Puzzle solved in {solve_time:.2f} seconds.\n")
-        messagebox.showinfo("nodeexplored",f"{nodes_explored} nodes were explored")
-        messagebox.showinfo("moves",f"the moves made were{previous_moves}\n")
-        messagebox.showinfo("depth",f"solution depth is {len(path)}\n")
-        messagebox.showinfo("nodes explored",f"{nodes_explored} nodes were explored")
 
+    # Run the selected algorithm with time limit
+        solve_time = time.time() - start_time
+        while(solve_time<30):
+            if algorithm == "A*":
+                cost, current_state, path, previous_moves, nodes_explored = Astar.Astar(self.start_state, heuristic)
+                self.solution_states = path
+                break
+
+            elif algorithm == "BFS":
+                current_state, path, previous_moves, nodes_explored = BFS.BFS(self.start_state)
+                self.solution_states = path
+                cost = len(path)
+                break
+
+            elif algorithm == "DFS":
+                current_state, path, previous_moves, nodes_explored = DFS.DFS(self.start_state)
+                self.solution_states = path
+                cost = len(path)
+                break
+
+            else:
+                messagebox.showinfo("No Solution", "No solution found within the depth limit or time limit has been exceeded.")
+                return
+
+       
+        message = (
+        f"Puzzle solved in {solve_time:.2f} seconds.\n"
+        f"Solution depth: {len(self.solution_states)}\n"
+        f"Cost of path: {cost}\n"
+        f"Nodes explored: {nodes_explored}\n"
+        f"Moves made: {previous_moves}\n"
+        )
+        messagebox.showinfo("Solution Summary", message)
 
     def is_solvable(self, state):
         # Count inversions to check if solvable
@@ -119,7 +128,7 @@ class PuzzleSolverGUI:
         for state in self.solution_states:
             self.update_board_display(state)  # Update the display with the current state
             self.root.update()               # Update the Tkinter GUI window to show changes
-            time.sleep(0.1)                  # Pause for half a second for visualization
+            time.sleep(0.1)                  # Pause for  visualization
 
     def update_board_display(self, state):
         print(f"Updating board display with state: {state}")  # Debugging line
