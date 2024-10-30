@@ -46,7 +46,9 @@ def Astar(start_state, flag):
     min_cost_to_state = {tuple(start_state): 0}  # Use tuple for hashability
 
     # Start the algorithm sequence
-    while priority_queue and time.time() <= start_time + 30:
+    while priority_queue :
+        if time.time()-start_time > 30:
+            break
         cost, current_state, path, previous_moves = heapq.heappop(priority_queue) # Pop the lowest cost state(b3ml sort w b3deen pop)
         nodes_expolred+=1
         # Check if we have arrived at the goal

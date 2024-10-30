@@ -9,7 +9,9 @@ def DFS(start_state):
     stack = [(start_state, [], [])]  # each element is (state, path, previous moves)
     visited = set()
     nodes_explored=0
-    while stack and start_time-time.time() <= 30:
+    while stack :
+        if time.time()-start_time > 30:
+            break
         current_state, path, previous_moves= stack.pop()
         nodes_explored+=1
         if current_state == GOAL_STATE:

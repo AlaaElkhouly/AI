@@ -11,7 +11,9 @@ def BFS(start_state):
     #add counter for nodes explored
     nodes_expolred=0
     
-    while queue and time.time() <= start_time + 30:
+    while queue :
+        if time.time()-start_time > 30:
+            break
         current_state, path, previous_moves = queue.popleft()
         nodes_expolred+=1 # increment the counter
         if current_state == GOAL_STATE:

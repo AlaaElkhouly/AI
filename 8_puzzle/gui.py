@@ -4,6 +4,7 @@ import time
 import Astar
 import BFS
 import DFS
+import fares_idfs
 
 class PuzzleSolverGUI:
     def __init__(self, root):
@@ -21,11 +22,12 @@ class PuzzleSolverGUI:
         
         # Algorithm selection
         self.algorithm_var = tk.StringVar(value="A*")
+        self.max_depth=tk.IntVar(value=50)
         self.time_limit=30 #time limit for algorithms is 30s
         algo_frame = tk.Frame(self.root) #algorithm slelection window
         algo_frame.pack()# add to root window
         tk.Label(algo_frame, text="Select Algorithm: ").pack(side=tk.LEFT) #prompt user to choose alogrithm
-        tk.OptionMenu(algo_frame, self.algorithm_var, "BFS", "DFS", "A*").pack(side=tk.LEFT)
+        tk.OptionMenu(algo_frame, self.algorithm_var, "BFS", "DFS", "IDFS", "A*").pack(side=tk.LEFT)
 
         # Heuristic selection for A*
         self.heuristic_var = tk.StringVar(value="Manhattan")
@@ -78,34 +80,57 @@ class PuzzleSolverGUI:
         heuristic = self.heuristic_var.get() if algorithm == "A*" else None
         max_depth = self.max_depth.get() if algorithm == "IDFS" else None
         start_time = time.time()
+        
 
     # Run the selected algorithm with time limit
-        solve_time = time.time() - start_time
-        while(solve_time<30):
+        
+        while(True):
+            elapsed_time = time.time() - start_time
+            
+            if elapsed_time >= 30:
+                messagebox.showinfo("Time Limit Exceeded", "The time limit has been exceeded without finding a solution.")
+                return
+        
             if algorithm == "A*":
                 cost, current_state, path, previous_moves, nodes_explored = Astar.Astar(self.start_state, heuristic)
-                self.solution_states = path
-                break
+                if path:
+                    self.solution_states = path #if solution found
+                    break
 
             elif algorithm == "BFS":
                 current_state, path, previous_moves, nodes_explored = BFS.BFS(self.start_state)
-                self.solution_states = path
-                cost = len(path)
-                break
+                if path:
+                    self.solution_states = path #if solution found
+                    cost = len(path)
+                    break
 
             elif algorithm == "DFS":
                 current_state, path, previous_moves, nodes_explored = DFS.DFS(self.start_state)
-                self.solution_states = path
-                cost = len(path)
-                break
+                if path:
+                    self.solution_states = path #if solution found
+                    cost = len(path)
+                    break
 
-            else:
-                messagebox.showinfo("No Solution", "No solution found within the depth limit or time limit has been exceeded.")
-                return
+            elif algorithm == "IDFS":
+                result = fares_idfs.iterative_DFS(self.start_state, max_depth)
 
-       
+                if result:  # Check if IDFS found a solution
+                    current_state = result['path_to_goal'][-1] if result['path_to_goal'] else self.start_state
+                    path = result['path_to_goal']
+                    depth = result['search_depth']
+                    cost = result['cost_of_path']
+                    nodes_explored = result['nodes_expanded']
+                    previous_moves=path
+                    self.solution_states = path
+                    break
+
+        if not self.solution_states:
+            messagebox.showinfo("No Solution", "No solution found within the depth limit or time limit has been exceeded.")
+            return
+
+        solve_time = time.time() - start_time
         message = (
-        f"Puzzle solved in {solve_time:.2f} seconds.\n"
+        f"Puzzle solved in {solve_time:.5f} seconds.\n"
         f"Solution depth: {len(self.solution_states)}\n"
         f"Cost of path: {cost}\n"
         f"Nodes explored: {nodes_explored}\n"
