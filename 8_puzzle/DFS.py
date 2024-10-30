@@ -1,6 +1,9 @@
 import time
 import HelpingFns as c
-def DFS(start_state,GOAL_STATE):
+
+
+GOAL_STATE = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+def DFS(start_state):
     print("Depth-First Search (DFS) Running.....")
     start_time = time.time()
     stack = [(start_state, [], [])]  # each element is (state, path, previous moves)
