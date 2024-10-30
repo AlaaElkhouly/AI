@@ -70,7 +70,7 @@ def get_neighbors(state):
         'Left': (0, -1), # reduce the coumn index by one 
         'Right': (0, 1)  # increse the column index by one 
     }
-    for move_name,(row_change,column_change) in moves.values():
+    for move_name,(row_change,column_change) in moves.items():
         new_row, new_col = row + row_change, col + column_change #apply changes to blank
 
         if 0 <= new_row < 3 and 0 <= new_col < 3:  # check that we are within board bounds
