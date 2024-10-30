@@ -1,8 +1,8 @@
 import time
 import HelpingFns as c
 from collections import deque
-
-def BFS(start_state,GOAL_STATE):
+GOAL_STATE = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+def BFS(start_state):
     print("Breadth-First Search (BFS) Running.....")
     start_time = time.time()
     queue = deque([(start_state, [], [])])  # each element is (state, path,previous moves)
