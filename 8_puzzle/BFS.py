@@ -15,7 +15,7 @@ def BFS(start_state,GOAL_STATE):
             return path
         visited.add(tuple(current_state))
         for neighbor in c.get_neighbors(current_state):
-                if tuple(neighbor) not in visited:
+                if neighbor not in visited:
                     queue.append((neighbor, path + [neighbor]))
     print("Sorry, no path found :(")
     return None  # no solution
