@@ -1,12 +1,12 @@
 import math
 
 def input_array():
-    n=int(input("enter the starting board states (1-8)"))
+    n=int(input("Please enter 9 elements (0 to 8) for the 8-puzzle game initial state:"))
     INITIAL_STATE=[int(digit) for digit in str(n)]
     while 9 in INITIAL_STATE or len(INITIAL_STATE)!=9 or len(INITIAL_STATE)!=len(set(INITIAL_STATE)):
        n=int(input("enter the starting board states (1-8)"))
        INITIAL_STATE=[int(digit) for digit in str(n)]
-    print(INITIAL_STATE)
+    print("State Entered:",INITIAL_STATE)
     return INITIAL_STATE
 
 #----------------------------------------------------------------------------------------------------
