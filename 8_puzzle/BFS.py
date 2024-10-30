@@ -10,10 +10,12 @@ def BFS(start_state,GOAL_STATE):
     while queue and time.time() <= start_time + 30:
         current_state, path, previous_moves = queue.popleft()
         if current_state == GOAL_STATE:
+            cost=len(path)
             print("Path:",path)
-            print("moves made",previous_moves)
+            print("moves made:",previous_moves)
             print(f"Time taken: {round(time.time() - start_time,5)} seconds")
-            return current_state, path, previous_moves
+            print("cost (in moves):",cost)
+            return current_state, path, previous_moves,cost
         visited.add(tuple(current_state))
         neighbor, neighbor_state, moves= c.get_neighbors(current_state)
         for state,move in zip(neighbor_state,moves)  :
