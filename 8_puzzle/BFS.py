@@ -5,17 +5,19 @@ from collections import deque
 def BFS(start_state,GOAL_STATE):
     print("Breadth-First Search (BFS) Running.....")
     start_time = time.time()
-    queue = deque([(start_state, [])])  # each element is (state, path)
+    queue = deque([(start_state, [], [])])  # each element is (state, path,previous moves)
     visited = set()
     while queue and time.time() <= start_time + 30:
-        current_state, path = queue.popleft()
+        current_state, path, previous_moves = queue.popleft()
         if current_state == GOAL_STATE:
             print("Path:",path)
+            print("moves made",previous_moves)
             print(f"Time taken: {round(time.time() - start_time,5)} seconds")
-            return path
+            return current_state, path, previous_moves
         visited.add(tuple(current_state))
-        for neighbor in c.get_neighbors(current_state):
-                if tuple(neighbor) not in visited:
-                    queue.append((neighbor, path + [neighbor]))
+        neighbor, neighbor_state, moves= c.get_neighbors(current_state)
+        for state,move in zip(neighbor_state,moves)  :
+                if tuple(state) not in visited:
+                    queue.append((state, path + [state],previous_moves+[move]))
     print("Sorry, no path found :(")
     return None  # no solution

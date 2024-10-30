@@ -25,4 +25,3 @@ if c.is_solvable(INITIAL_STATE):
 else:
     print("The Puzzle you have entered is unsolvable")
 
-#alaa is hot
