@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import messagebox, simpledialog
 import time
 import Astar
+import BFS
+import DFS
 class PuzzleSolverGUI:
     def __init__(self, root):
         self.root = root #root window
@@ -26,7 +28,7 @@ class PuzzleSolverGUI:
         # Heuristic selection for A*
         self.heuristic_var = tk.StringVar(value="Manhattan")
         tk.Label(algo_frame, text="Heuristic: ").pack(side=tk.LEFT)
-        tk.OptionMenu(algo_frame, self.heuristic_var, 1, 0).pack(side=tk.LEFT)
+        tk.OptionMenu(algo_frame, self.heuristic_var, "Eucleadian", "Manhattan").pack(side=tk.LEFT)
         
         # Buttons to enter state, solve, and show solution
         control_frame = tk.Frame(self.root)
@@ -64,14 +66,27 @@ class PuzzleSolverGUI:
         heuristic = self.heuristic_var.get() if algorithm == "A*" else None
         start_time = time.time()
         
+        
         if algorithm=="A*":
-            self.solution_states=Astar.Astar(self.start_state,heuristic)
-    
-        # Call your provided algorithm functions here, e.g., solve_with_algorithm
-        # Example: self.solution_states = solve_with_algorithm(self.start_state, algorithm, heuristic)
+            cost, current_state, path, previous_moves,nodes_explored=Astar.Astar(self.start_state,heuristic)
+            self.solution_states=path
+        if algorithm=="BFS":
+            current_state, path, previous_moves,nodes_explored=BFS.BFS(self.start_state)
+            self.solution_states=path
+            cost=len(path)
+        if algorithm=="DFS":
+            current_state, path, previous_moves,nodes_explored=DFS(self.start_state)
+            self.solution_states=path
+            cost=len(path)
+
         
         solve_time = time.time() - start_time
-        messagebox.showinfo("Solution Found", f"Puzzle solved in {solve_time:.2f} seconds.")
+        messagebox.showinfo("Solution Found", f"Puzzle solved in {solve_time:.2f} seconds.\n")
+        messagebox.showinfo("nodeexplored",f"{nodes_explored} nodes were explored")
+        messagebox.showinfo("moves",f"the moves made were{previous_moves}\n")
+        messagebox.showinfo("depth",f"solution depth is {len(path)}\n")
+        messagebox.showinfo("nodes explored",f"{nodes_explored} nodes were explored")
+
 
     def is_solvable(self, state):
         # Count inversions to check if solvable
@@ -91,11 +106,16 @@ class PuzzleSolverGUI:
             time.sleep(0.5)                  # Pause for half a second for visualization
 
     def update_board_display(self, state):
+        print(f"Current state: {state}")  # Debugging line to check the type and value of `state`
+        if not isinstance(state, list):
+            print("Error: Expected state to be a list, got:", type(state))
+            return  # Stop execution to avoid the error
+    
         # Convert the flat 1D list into the 3x3 display grid
         for i in range(self.board_size):
             for j in range(self.board_size):
                 tile = state[i * self.board_size + j]   # Access the tile value from the 1D list
-                self.board[i][j].config(text=str(tile) if tile != 0 else "")  # Display value, leave empty for 0
+                self.board[i][j].config(text=str(tile) if tile != 0 else "")
 
 root = tk.Tk()
 app = PuzzleSolverGUI(root)

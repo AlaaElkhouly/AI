@@ -15,7 +15,7 @@ def calc_heuristic(state,flag):
             continue
         target_row, target_col = value // 3, value % 3
         current_row, current_col = index // 3, index % 3
-        if flag:
+        if flag=="Eucleadian":
             distance += math.sqrt((current_row - target_row) ** 2 + (current_col - target_col) ** 2) # flag = 1 for eucleadian distance
         else:
             distance += abs(current_row - target_row) + abs(current_col - target_col)
@@ -32,6 +32,9 @@ def Astar(start_state, flag):
     start_time = time.time()
     # Initialize the priority queue as a min-heap
     priority_queue = []
+
+    #add counter for nodes explored
+    nodes_expolred=0
     
     # Push the initial state into the priority queue
     heapq.heappush(priority_queue, (0, start_state, [], []))  # (cost, state, path, moves)
@@ -44,13 +47,13 @@ def Astar(start_state, flag):
 
     # Start the algorithm sequence
     while priority_queue and time.time() <= start_time + 30:
-        cost, current_state, path, previous_moves = heapq.heappop(priority_queue)  # Pop the lowest cost state
-        
+        cost, current_state, path, previous_moves = heapq.heappop(priority_queue) # Pop the lowest cost state(b3ml sort w b3deen pop)
+        nodes_expolred+=1
         # Check if we have arrived at the goal
         if current_state == GOAL_STATE:
             print("Path found:", path)
             print(f"Time taken: {round(time.time() - start_time,5)} seconds")
-            return cost, current_state, path, previous_moves
+            return cost, current_state, path, previous_moves,nodes_expolred
         
         visited.add(tuple(current_state))  # Add the current state to visited
         
@@ -74,4 +77,7 @@ def Astar(start_state, flag):
 
     # If we exit the loop without finding the goal
     print("Sorry, no path found :(")
-    return 0,0,0,0
+    return 0,0,0,0,0
+
+#example
+#cost, current_state, path, previous_moves, nodes_expolred=Astar(start_state=,flag)
