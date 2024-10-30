@@ -4,7 +4,7 @@ import time
 import Astar
 import BFS
 import DFS
-import IDFS
+import fares_idfs
 class PuzzleSolverGUI:
     def __init__(self, root):
         self.root = root #root window
@@ -87,9 +87,9 @@ class PuzzleSolverGUI:
             self.solution_states=path
             cost=len(path)
         if algorithm=="IDFS":
-            current_state, path, previous_moves,nodes_explored=IDFS.IDFS(self.start_state)
+            current_state,path,depth,cost,nodes_explored=fares_idfs.iterative_DFS(self.start_state)
             self.solution_states=path
-            cost=len(path)
+            
         
         solve_time = time.time() - start_time
         messagebox.showinfo("Solution Found", f"Puzzle solved in {solve_time:.2f} seconds.\n")

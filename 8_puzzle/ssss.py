@@ -1,7 +1,7 @@
 
-def DLS(state, depth, visited, path,GOAL_STATE):
+def DLS(current_state):
     if state == GOAL_STATE:
-        return path
+        return current_state, path, previous_moves,nodes_explored
     if depth <= 0:
         return None
     visited.add(tuple(state))
