@@ -1,5 +1,4 @@
 import math
-
 def input_array():
     while 1:
         n=int(input("Please enter 9 elements (0 to 8) for the 8-puzzle game initial state:"))
@@ -21,7 +20,8 @@ def is_solvable(state):
         for j in range(i + 1, len(flat_state)):
             if flat_state[i] > flat_state[j]:
                 inversions += 1
-    return inversions % 2 == 0 # returns 0 if not solvable (odd number of inversions) and returns 1 if solvable(even number of inversions)
+    # returns 0 if not solvable (odd number of inversions) and returns 1 if solvable(even number of inversions)
+    return inversions % 2 == 0 
 # ----------------------------------------------------------------------------------------------------
 def method_choice():
     while True:#user will keep re-entering till number is between 1 and 4
@@ -59,6 +59,7 @@ def get_neighbors(state):
             moves_made.append(move_name)# store the move 
             new_blank_index = new_row * 3 + new_col # acquire new index
             new_state = state[:]
-            new_state[index_of_blank], new_state[new_blank_index] = new_state[new_blank_index], new_state[index_of_blank] #swapping with adjacent
+             #swapping with adjacent
+            new_state[index_of_blank], new_state[new_blank_index] = new_state[new_blank_index], new_state[index_of_blank]
             neighbor_states.append(new_state) # append the resulting state 
     return neighbors, neighbor_states, moves_made
