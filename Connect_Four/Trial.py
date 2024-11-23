@@ -9,9 +9,9 @@ def Heuristics2(r, c):
     for i in range(r):
         for j in range(c):
             # Manhattan distance from the center
-            distance = abs(i - cr) + abs(j - cc)
+            d = abs(i - cr) + abs(j - cc)
             # Assign a higher value to squares closer to the center
-            M[i][j] = (r + c) - distance
+            M[i][j] = (r + c) - d
     return M
-# r:row  cr:center row  c:coloumn   cc:center column
+# r:row  cr:center row  c:coloumn   cc:center column    d:manhattan distance from center
 print(Heuristics2(7,7))
