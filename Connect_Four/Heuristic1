@@ -1,4 +1,4 @@
-ef check_win(board, piece):
+def check_win(board, piece):
     # Horizontal, vertical, diagonal checks
     for row in range(ROWS):
         for col in range(COLS - 3):
