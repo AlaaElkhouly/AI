@@ -143,3 +143,11 @@ def play_game():
     print("score is",(np.sum(HEURISTIC_MATRIX[board==1])-np.sum(HEURISTIC_MATRIX[board==2])))
 #_____________________________________________________________________________________________#
 play_game()
+'''
+My Notes:
+1.check my green comments with chat gpt
+2.Redo expected minimax
+3.create a tree for each mode
+4. link with GUI
+5 create Report
+'''
