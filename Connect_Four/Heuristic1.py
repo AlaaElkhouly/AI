@@ -47,9 +47,9 @@ def heuristic(bitboard, piece):
     return score
 -------------------------------------------------------------------------------------------------------------------------
 def evaluate_window_heuristic1(window, piece, row, col, direction):
-    """
-    Evaluate a window of 4 cells for Heuristic-1 features.
-    """
+    
+    #Evaluate a window of 4 cells for Heuristic-1 features.
+ 
     score = 0
     opp_piece = PLAYER_PIECE if piece == AI_PIECE else AI_PIECE
 
@@ -90,9 +90,9 @@ def evaluate_window_heuristic1(window, piece, row, col, direction):
     return score
 ------------------------------------------------------------------------------
 def check_adjacent_availability(board, row, col, direction, piece):
-    """
-    Check the availability of adjacent spaces for a horizontal 3-connected pattern.
-    """
+    
+    #Check the availability of adjacent spaces for a horizontal 3-connected pattern.
+
     if direction != 'horizontal':
         return None  # Adjacent availability checks only apply to horizontal connections
 
@@ -108,9 +108,9 @@ def check_adjacent_availability(board, row, col, direction, piece):
 
 ---------------------------------------------------------------------------------
 def count_available_squares(board, row, col, direction):
-    """
-    Count the number of available squares adjacent to two connected chessmen.
-    """
+
+   # Count the number of available squares adjacent to two connected chessmen.
+
     available = 0
 
     if direction == 'horizontal':
@@ -141,9 +141,9 @@ def count_available_squares(board, row, col, direction):
     return available
 --------------------------------------------------
 def single_piece_heuristic(board, piece):
-    """
-    Evaluate single chessmen based on their position on the board.
-    """
+    
+    #Evaluate single chessmen based on their position on the board.
+   
     position_values = [40, 70, 120, 200, 120, 70, 40]  # Column-wise values for single pieces
     score = 0
     for row in range(ROWS):
