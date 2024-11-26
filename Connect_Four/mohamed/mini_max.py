@@ -5,26 +5,15 @@ class ConnectFour:
         self.height = [0] * 7  # Heights of columns
         self.num_rows = 6  # Number of rows
         self.num_cols = 7  # Number of columns
+        self.queue=[]
 
-    def check_win(self, board):
-        """
-        Check if a player has won.
-        :param board: The bitboard of the current player.
-        :return: True if the player has four in a row.
-        """
-        directions = [1, 7, 6, 8]  # Horizontal, Vertical, Diagonal1, Diagonal2
-        for direction in directions:
-            bb = board & (board >> direction)
-            if bb & (bb >> 2 * direction):
-                return True
-        return False
-
+    
     def get_valid_moves(self):
         """
         Get a list of valid columns where a piece can be dropped.
         :return: List of column indices that are not full.
         """
-        return [col for col in range(self.num_cols) if self.height[col] < self.num_rows]
+        return [col for col in range(self.num_cols) if self.height[col] < self.num_rows] #still is not full
 
     def drop_piece(self, board, column, player_bitboard):
         """
@@ -39,24 +28,69 @@ class ConnectFour:
         return player_bitboard
 
     def evaluate_board(self):
+         """
+        Count the number of connect fours for the given board.
+        :param board: The bitboard of the current player.
+        :return: The total number of connect fours (groups of four in a row).
         """
-        Heuristic to evaluate the board.
-        :return: Score for the current board state.
+         directions = [1, 7, 6, 8]  # Offsets for horizontal, vertical, diagonal1, diagonal2
+         player1_score=0
+         player2_score=0# Initialize the count of connect fours
+        
+
+         for direction in directions:
+            # Find pairs of connected pieces in the current direction
+            player1_board = self.player1 & (self.player1 >> direction)
+            # Find groups of four connected pieces and count them
+            player1_score += bin(player1_score & (player1_score >> 2 * direction)).count('1')
+            
+            # Find pairs of connected pieces in the current direction
+            player2_board = self.player2 & (self.player2 >> direction)
+            # Find groups of four connected pieces and count them
+            player2_score += bin(player2_score & (player2_score >> 2 * direction)).count('1')
+
+
+         return player1_score,player1_score
+     
+    def simulate_moves(self, max_depth):
         """
-        # A simple heuristic: number of connected pieces
-        player1_score = bin(self.player1).count('1')
-        player2_score = bin(self.player2).count('1')
-        return player1_score - player2_score
+        Simulate all possible moves up to a given depth and keep track of the states.
+        :param max_depth: Maximum depth to simulate.
+        """
+        from copy import deepcopy
+
+        self.queue.append((deepcopy(self.player1), deepcopy(self.player2)))  # Initial state
+
+        for depth in range(max_depth):
+            next_states = []
+            for state in self.queue:
+                player1, player2 = state
+                for move in self.get_valid_moves():
+                    new_player1 = self.drop_piece(player1, move, deepcopy(self.player1))
+                    new_player2 = self.drop_piece(player2, move, deepcopy(self.player2))
+                    next_states.append((new_player1, new_player2))
+
+            self.queue.extend(next_states)
+
+    def print_tree(self):
+        """
+        Print the tree of states stored in the queue.
+        """
+        for i, state in enumerate(self.queue):
+            player1, player2 = state
+            print(f"State {i}: Player 1 Bitboard: {bin(player1)} | Player 2 Bitboard: {bin(player2)}")
 
 
 
 
+# Example usage
+game = ConnectFour()
+game.simulate_moves(max_depth=2)
+game.print_tree()
 
 
 
-
-
-def minimax(game, depth, alpha, beta, maximizing_player):
+def minimax(game, max_depth, alpha, beta, maximizing_player):
 
     """
     Minimax algorithm with alpha-beta pruning.
@@ -67,16 +101,14 @@ def minimax(game, depth, alpha, beta, maximizing_player):
     :param maximizing_player: True if the current player is maximizing.
     :return: Best score and best move (column index).
     """
+    max_depth=input("enter maximum depth")
     # Base case: Check for a terminal state or max depth
-    if depth == 0 or game.check_win(game.player1) or game.check_win(game.player2):
-        if game.check_win(game.player1):
-            return 1000, None  # Maximizing player wins
-        elif game.check_win(game.player2):
-            return -1000, None  # Minimizing player wins
-        else:
-            return game.evaluate_board(), None  # Heuristic score
+    if depth == max_depth:
+       
+        
+        return game.evaluate_board(), None  # Heuristic score
 
-    valid_moves = game.get_valid_moves()
+    valid_moves = game.get_valid_moves() #get valid moves
 
     if maximizing_player:
         max_eval = float('-inf')
