@@ -5,7 +5,7 @@ def bitboard_to_array(bitboard, rows, cols):
             bit_position = i * cols + j
             board[i, j] = (bitboard >> bit_position) & 1
     return board
-    -------------------------------------------------------------------------------
+ 
 def heuristic(bitboard, piece):
      board = bitboard_to_array(bitboard, ROWS, COLS)
     score = 0
@@ -45,7 +45,7 @@ def heuristic(bitboard, piece):
     score += single_piece_heuristic(board, piece)
 
     return score
--------------------------------------------------------------------------------------------------------------------------
+ 
 def evaluate_window_heuristic1(window, piece, row, col, direction):
     
     #Evaluate a window of 4 cells for Heuristic-1 features.
@@ -88,7 +88,7 @@ def evaluate_window_heuristic1(window, piece, row, col, direction):
         score -= 900000
 
     return score
-------------------------------------------------------------------------------
+ 
 def check_adjacent_availability(board, row, col, direction, piece):
     
     #Check the availability of adjacent spaces for a horizontal 3-connected pattern.
@@ -106,7 +106,7 @@ def check_adjacent_availability(board, row, col, direction, piece):
     else:
         return "none"
 
----------------------------------------------------------------------------------
+ 
 def count_available_squares(board, row, col, direction):
 
    # Count the number of available squares adjacent to two connected chessmen.
@@ -139,7 +139,7 @@ def count_available_squares(board, row, col, direction):
         pass
 
     return available
---------------------------------------------------
+ 
 def single_piece_heuristic(board, piece):
     
     #Evaluate single chessmen based on their position on the board.
