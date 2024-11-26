@@ -114,10 +114,7 @@ def expected_minimax(board, depth, piece, prob=0.6):
 #_____________________________________________________________________________________________#
 def play_game():
     numofmoves=int(input("Please Enter Number of moves to be played:"))
-    print("Select Mode:")
-    print("1. Minimax")
-    print("2. Minimax with Alpha-Beta Pruning")
-    print("3. Expected Minimax")
+    print("Select Mode:\n1. Minimax\n2. Minimax with Alpha-Beta Pruning\n3. Expected Minimax\n")
     mode = int(input("Enter mode: "))
     board = np.zeros((ROWS, COLS), dtype=int)
     turn = 0
