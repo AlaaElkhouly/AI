@@ -7,9 +7,6 @@ def bitboard_to_array(bitboard, rows, cols):
     return board
     -------------------------------------------------------------------------------
 def heuristic(bitboard, piece):
-    """
-    Evaluate the board state based on Heuristic-1.
-    """
      board = bitboard_to_array(bitboard, ROWS, COLS)
     score = 0
     opp_piece = PLAYER_PIECE if piece == AI_PIECE else AI_PIECE
