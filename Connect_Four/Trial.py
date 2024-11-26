@@ -71,7 +71,6 @@ def evaluate_board(board):
     return score
 
 def best_move(board):
-    """Find the best move for the current player (using Minimax)."""
     valid_moves = get_valid_moves(board)
     best_value = -float('inf')
     best_col = random.choice(valid_moves)
@@ -154,6 +153,57 @@ def minimax_alpha_beta(board, depth, alpha, beta, maximizing_player):
                 break
         return best_value
 
+#edited
+def run_game():
+    current_player = PLAYER_ONE  # User starts
+    while not is_full(board):  # Game ends when board is full
+        if current_player == PLAYER_ONE:
+            # Player 1 (User) input
+            print_board(board)
+            move = int(input("Player 1, choose a column (0-6): "))
+            while move not in get_valid_moves(board):
+                print("Invalid move. Try again.")
+                move = int(input("Player 1, choose a column (0-6): "))
+            row, col = make_move(board, move, PLAYER_ONE)
+            print(f"Player 1 places at ({row}, {col})")
+            current_player = PLAYER_TWO  # Switch to Player 2
+        else:
+            # Player 2 (Minimax AI with Alpha-Beta Pruning) makes a move
+            move = best_move_alpha_beta(board)
+            row, col = make_move(board, move, PLAYER_TWO)
+            print(f"Player 2 places at ({row}, {col})")
+            current_player = PLAYER_ONE  # Switch to Player 1
+        print_board(board)
+
+    print("The board is full. It's a draw!")
+    print_board(board)
+
+# edited again
+def run_game():
+    current_player = PLAYER_ONE  # User starts
+    while not is_full(board):  # Game ends when board is full
+        if current_player == PLAYER_ONE:
+            # Player 1 (User) input
+            print_board(board)
+            move = int(input("Player 1, choose a column (0-6): "))
+            while move not in get_valid_moves(board):
+                print("Invalid move. Try again.")
+                move = int(input("Player 1, choose a column (0-6): "))
+            row, col = make_move(board, move, PLAYER_ONE)
+            print(f"Player 1 places at ({row}, {col})")
+            current_player = PLAYER_TWO  # Switch to Player 2
+        else:
+            # Player 2 (AI) makes a move using Expected Minimax
+            move = best_move_expected(board)
+            row, col = make_move(board, move, PLAYER_TWO)
+            print(f"Player 2 places at ({row}, {col})")
+            current_player = PLAYER_ONE  # Switch to Player 1
+        print_board(board)
+
+    print("The board is full. It's a draw!")
+    print_board(board)
+
+
 def best_move_alpha_beta(board):
     """Find the best move for the current player (using Alpha-Beta Pruning)."""
     valid_moves = get_valid_moves(board)
@@ -218,54 +268,26 @@ def best_move_expected(board):
     
     return best_col
 
+def check_win(board, piece):
+    # Check horizontal
+    for r in range(ROWS):
+        for c in range(COLS - 3):
+            if all(board[r, c:c + 4] == piece):
+                return True
+    # Check vertical
+    for r in range(ROWS - 3):
+        for c in range(COLS):
+            if all(board[r:r + 4, c] == piece):
+                return True
+    # Check diagonals
+    for r in range(ROWS - 3):
+        for c in range(COLS - 3):
+            if all([board[r + i][c + i] == piece for i in range(4)]):
+                return True
+    for r in range(3, ROWS):
+        for c in range(COLS - 3):
+            if all([board[r - i][c + i] == piece for i in range(4)]):
+                return True
+    return False
 
 
-#edited
-def run_game():
-    current_player = PLAYER_ONE  # User starts
-    while not is_full(board):  # Game ends when board is full
-        if current_player == PLAYER_ONE:
-            # Player 1 (User) input
-            print_board(board)
-            move = int(input("Player 1, choose a column (0-6): "))
-            while move not in get_valid_moves(board):
-                print("Invalid move. Try again.")
-                move = int(input("Player 1, choose a column (0-6): "))
-            row, col = make_move(board, move, PLAYER_ONE)
-            print(f"Player 1 places at ({row}, {col})")
-            current_player = PLAYER_TWO  # Switch to Player 2
-        else:
-            # Player 2 (Minimax AI with Alpha-Beta Pruning) makes a move
-            move = best_move_alpha_beta(board)
-            row, col = make_move(board, move, PLAYER_TWO)
-            print(f"Player 2 places at ({row}, {col})")
-            current_player = PLAYER_ONE  # Switch to Player 1
-        print_board(board)
-
-    print("The board is full. It's a draw!")
-    print_board(board)
-
-# edited again
-def run_game():
-    current_player = PLAYER_ONE  # User starts
-    while not is_full(board):  # Game ends when board is full
-        if current_player == PLAYER_ONE:
-            # Player 1 (User) input
-            print_board(board)
-            move = int(input("Player 1, choose a column (0-6): "))
-            while move not in get_valid_moves(board):
-                print("Invalid move. Try again.")
-                move = int(input("Player 1, choose a column (0-6): "))
-            row, col = make_move(board, move, PLAYER_ONE)
-            print(f"Player 1 places at ({row}, {col})")
-            current_player = PLAYER_TWO  # Switch to Player 2
-        else:
-            # Player 2 (AI) makes a move using Expected Minimax
-            move = best_move_expected(board)
-            row, col = make_move(board, move, PLAYER_TWO)
-            print(f"Player 2 places at ({row}, {col})")
-            current_player = PLAYER_ONE  # Switch to Player 1
-        print_board(board)
-
-    print("The board is full. It's a draw!")
-    print_board(board)
