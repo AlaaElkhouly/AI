@@ -1,5 +1,8 @@
 import numpy as np
 import random
+ROWS = 6
+COLS = 7
+depth = 3
 #_____________________________________________________________________________________________#
 def Heuristics2(r, c):
     M = np.zeros((r, c), dtype=int)
@@ -10,6 +13,7 @@ def Heuristics2(r, c):
             d = abs(i - cr) + abs(j - cc)
             M[i][j] = (r + c) - d
     return M
+HEURISTIC_MATRIX = Heuristics2(ROWS, COLS)
 #_____________________________________________________________________________________________#
 def is_valid_move(board, col):
     return board[0][col] == 0
@@ -109,29 +113,17 @@ def expected_minimax(board, depth, piece, prob=0.6):
     return best_col, value
 #_____________________________________________________________________________________________#
 def play_game():
-    ROWS = 6
-    COLS = 7
-    depth = 3
-    HEURISTIC_MATRIX = Heuristics2(ROWS, COLS)
     numofmoves=int(input("Please Enter Number of moves to be played:"))
-    print("Select Mode:")
-    print("1. Minimax")
-    print("2. Minimax with Alpha-Beta Pruning")
-    print("3. Expected Minimax")
+    print("Select Mode:\n1. Minimax\n2. Minimax with Alpha-Beta Pruning\n3. Expected Minimax\n")
     mode = int(input("Enter mode: "))
     board = np.zeros((ROWS, COLS), dtype=int)
-    game_over = False
     turn = 0
-
-    while not game_over and turn < numofmoves:
+    while   np.sum(board == 0)!=0 and turn < numofmoves:
         if turn % 2 == 0:
             col = int(input("Your turn! Enter column (0-6): "))
             if is_valid_move(board, col):
                 row = get_next_open_row(board, col)
                 drop_piece(board, row, col, 1)
-                if check_win(board, 1):
-                    print("You win!")
-                    game_over = True
         else:
             if mode == 1:
                 col, _ = minimax(board, depth, True, 2)
@@ -142,14 +134,17 @@ def play_game():
             row = get_next_open_row(board, col)
             drop_piece(board, row, col, 2)
             print(f"AI chose column {col}")
-            if check_win(board, 2):
-                print("AI wins!")
-                game_over = True
-        
         print(board)
         turn += 1
-    
-    if not game_over:
-        print("Game over! Max turns reached.")
+    print("Game over!")
+    print("score is",(np.sum(HEURISTIC_MATRIX[board==1])-np.sum(HEURISTIC_MATRIX[board==2])))
 #_____________________________________________________________________________________________#
 play_game()
+'''
+My Notes:
+1.check my green comments with chat gpt
+2.Redo expected minimax
+3.create a tree for each mode
+4. link with GUI
+5 create Report
+'''
