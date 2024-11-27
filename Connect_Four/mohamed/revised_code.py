@@ -2,9 +2,9 @@
 import math
 
 class ConnectFour:
-    def __init__(self, max_depth=5):
-        self.player1_board = 0  # bitboard for player 1
-        self.player2_board = 0  # bitboard for player 2
+    def __init__(self, max_depth=2):
+        self.player1_board = 0b0  # bitboard for player 1
+        self.player2_board = 0b0   # bitboard for player 2
         self.height = [0] * 7   # column heights
         self.num_rows = 6
         self.num_cols = 7
@@ -16,10 +16,14 @@ class ConnectFour:
 
     def drop_piece(self, player_bitboard, column):
         """Simulate dropping a piece in the given column."""
+        if self.height[column] >= self.num_rows:
+            raise ValueError("Column is full!")
         mask = 1 << (column * 7 + self.height[column])
         player_bitboard |= mask
         self.height[column] += 1
+        print(f"Updated bitboard: {bin(player_bitboard)}")
         return player_bitboard
+
 
     def undo_drop_piece(self, player_bitboard, column):
         """Undo the last piece drop."""
@@ -30,19 +34,21 @@ class ConnectFour:
 
     def evaluate_board(self):
         """Evaluate the current board state for scoring."""
-        directions = [1, 6, 7, 8]  # right, diagonal-left, vertical, diagonal-right
-        score = 0
+        directions = [1, 6, 7, 8]
+        player1_score = 0
+        player2_score = 0
 
         for direction in directions:
-            # Player 1 scoring
-            player1_temp = self.player1_board & (self.player1_board >> direction)
-            score += bin(player1_temp & (player1_temp >> (2 * direction))).count('1')
+            for shift in [1, 2, 3]:  # Look for streaks of 2, 3, or 4
+                player1_temp = self.player1_board & (self.player1_board >> direction)
+                player2_temp = self.player2_board & (self.player2_board >> direction)
+                
+                player1_score += shift * bin(player1_temp & (player1_temp >> (shift * direction))).count('1')
+                player2_score += shift * bin(player2_temp & (player2_temp >> (shift * direction))).count('1')
 
-            # Player 2 scoring
-            player2_temp = self.player2_board & (self.player2_board >> direction)
-            score -= bin(player2_temp & (player2_temp >> (2 * direction))).count('1')
+        print(f"Player 1 score: {player1_score}, Player 2 score: {player2_score}")
+        return player1_score - player2_score
 
-        return score
 
     def minimax(self, depth, alpha, beta, maximizing_player):
         """Minimax with alpha-beta pruning."""
