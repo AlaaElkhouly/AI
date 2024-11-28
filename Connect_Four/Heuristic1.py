@@ -5,23 +5,24 @@ def bitboard_to_array(bitboard, rows, cols):
             bit_position = i * cols + j
             board[i, j] = (bitboard >> bit_position) & 1
     return board
+    
 def check_win(board, piece):
-    # Horizontal, vertical, diagonal checks
+    # Horizontal
     for row in range(ROWS):
         for col in range(COLS - 3):
             if all(board[row, col + i] == piece for i in range(4)):
                 return True
-
+    # vertical
     for row in range(ROWS - 3):
         for col in range(COLS):
             if all(board[row + i, col] == piece for i in range(4)):
                 return True
-
+    #diagonal ( sloping downward from left to right)
     for row in range(ROWS - 3):
         for col in range(COLS - 3):
             if all(board[row + i, col + i] == piece for i in range(4)):
                 return True
-
+    # diagonal(sloping downward from right to left)
     for row in range(3, ROWS):
         for col in range(COLS - 3):
             if all(board[row - i, col + i] == piece for i in range(4)):
