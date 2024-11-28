@@ -5,7 +5,29 @@ def bitboard_to_array(bitboard, rows, cols):
             bit_position = i * cols + j
             board[i, j] = (bitboard >> bit_position) & 1
     return board
- 
+def check_win(board, piece):
+    # Horizontal, vertical, diagonal checks
+    for row in range(ROWS):
+        for col in range(COLS - 3):
+            if all(board[row, col + i] == piece for i in range(4)):
+                return True
+
+    for row in range(ROWS - 3):
+        for col in range(COLS):
+            if all(board[row + i, col] == piece for i in range(4)):
+                return True
+
+    for row in range(ROWS - 3):
+        for col in range(COLS - 3):
+            if all(board[row + i, col + i] == piece for i in range(4)):
+                return True
+
+    for row in range(3, ROWS):
+        for col in range(COLS - 3):
+            if all(board[row - i, col + i] == piece for i in range(4)):
+                return True
+
+    return False 
 def heuristic(bitboard, piece):
      board = bitboard_to_array(bitboard, ROWS, COLS)
     score = 0
