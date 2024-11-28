@@ -1,11 +1,14 @@
+#_________________________________________TREE CODE_______________________________________________________
 import tkinter as tk
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from tkinter import ttk
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 ROWS, COLS = 6, 7
+layers=int(input("depth of gui tree?"))
 
-# Core Connect Four functions
+# Connect Four core functions
 def create_board():
     return np.zeros((ROWS, COLS), dtype=int)
 
@@ -23,63 +26,68 @@ def get_next_open_row(board, col):
         if board[r][col] == 0:
             return r
 
-# Recursive plotting function to avoid intersection and overlapping
-def plot_tree(ax, board, depth, maximizingPlayer, x, y, dx, dy):
+# Generate decision tree as indented text
+def generate_tree_text(board, depth, maximizingPlayer, level=0):
     if depth == 0:
-        ax.text(x, y-0.01, "(S)", ha="center", fontsize= 8, color="blue") # s for score at leaf node
+        return f"{'    ' * level}└── [Leaf Node]\n"
+    text = ""
+    for i, col in enumerate(get_valid_locations(board)):
+        row = get_next_open_row(board, col)
+        temp_board = board.copy()
+        drop_piece(temp_board, row, col, 1 if maximizingPlayer else 2)
+        connector = "└──" if i == len(get_valid_locations(board)) - 1 else "├──"
+        text += f"{'    ' * level}{connector} Move: Column {col}\n"
+        text += generate_tree_text(temp_board, depth-1, not maximizingPlayer, level+1)
+    return text
+
+# Plot tree graphically
+def plot_tree(ax, board, depth, maximizingPlayer, x=0.5, y=1, dx=0.25):
+    if depth == 0:
+        ax.text(x, y-0.01, "(S)", ha="center", fontsize=8, color="green") #s for score
         return
-
     valid_locations = get_valid_locations(board)
-    num_children = len(valid_locations)
-
     for i, col in enumerate(valid_locations):
         row = get_next_open_row(board, col)
         temp_board = board.copy()
         drop_piece(temp_board, row, col, 1 if maximizingPlayer else 2)
+        child_x = x - dx + i * (2 * dx / (len(valid_locations) - 1 if len(valid_locations) > 1 else 1))
+        child_y = y - 0.1
+        ax.plot([x, child_x], [y, child_y], color="black", lw=0.15)
+        ax.text(child_x, child_y, f"P{col}", ha="center", fontsize=8) #p{col} should describe the point on board
+        plot_tree(ax, temp_board, depth-1, not maximizingPlayer, child_x, child_y, dx * 0.5)
 
-        # Calculate position for child nodes
-        child_x = x - dx * (num_children - 1) / 2 + i * dx
-        child_y = y - dy
-
-        # Draw the connection and node
-        ax.plot([x, child_x], [y, child_y], color="black", lw=0.2) # 0<lw<1 controls transarency of color the transparent=0
-        ax.text(child_x, child_y, f"P{col}", ha="center", fontsize=8, color="black") # P {Should express the place on board}
-        plot_tree(ax, temp_board, depth - 1, not maximizingPlayer, child_x, child_y, dx/2, dy)
-
-# GUI for interactive tree display
-def display_plot_gui():
-    # Create a new tkinter window
+# GUI for text-based decision tree
+def display_tree_gui(layers):
     root = tk.Tk()
-    root.title("Connect Four Decision Tree - Interactive")
-
-    # Create a matplotlib figure
-    fig = Figure(figsize=(10, 8)) # lama kabarto kan kwys takes up memory tho!!!!!!!!!!!!!!!!!!!!!
-    ax = fig.add_subplot(111)
-    ax.axis("off")  # Turn off axes
-
-    # Initial plotting parameters
+    root.title("Connect Four Decision Tree - Text")
+    frame = ttk.Frame(root)
+    frame.pack(fill=tk.BOTH, expand=True)
+    scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL)
+    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+    text_box = tk.Text(frame, wrap=tk.NONE, yscrollcommand=scrollbar.set)
+    text_box.pack(fill=tk.BOTH, expand=True)
+    scrollbar.config(command=text_box.yview)
     board = create_board()
-    depth = 3
-    plot_tree(ax, board, depth=depth, maximizingPlayer=True, x=0.5, y=1.0, dx=0.02, dy=0.15)
-
-    # Embed the matplotlib figure into tkinter
-    canvas = FigureCanvasTkAgg(fig, master=root)
-    canvas_widget = canvas.get_tk_widget()
-    canvas_widget.pack(fill=tk.BOTH, expand=True)
-
-    # Allow zooming and dragging via matplotlib's built-in tools
-    toolbar = canvas.get_tk_widget()
-    toolbar.pack()
-    canvas.draw()
-
-    # Add zoom and drag support using Matplotlib's toolbar
-    toolbar_frame = tk.Frame(root)
-    toolbar_frame.pack(side=tk.BOTTOM, fill=tk.X)
-    toolbar_button = FigureCanvasTkAgg(fig, master=toolbar_frame)
-    toolbar_button.get_tk_widget().pack(side=tk.LEFT)
-
+    tree_text = generate_tree_text(board, layers , maximizingPlayer=True)
+    text_box.insert(tk.END, tree_text)
     root.mainloop()
 
-# Run the GUI
+# GUI for graphical decision tree
+def display_plot_gui(layers):
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.axis("off")
+    board = create_board()
+    plot_tree(ax, board, layers, maximizingPlayer=True)
+    root = tk.Tk()
+    root.title("Connect Four Decision Tree - Plot")
+    canvas = FigureCanvasTkAgg(fig, master=root)
+    canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+    canvas.draw()
+    root.mainloop()
+
+# Run both GUIs
 if __name__ == "__main__":
-    display_plot_gui()
+    # Uncomment one of the following lines to view its GUI
+    display_tree_gui(layers)
+    #display_plot_gui(layers)
+
