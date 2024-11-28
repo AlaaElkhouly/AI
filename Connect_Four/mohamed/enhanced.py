@@ -10,33 +10,49 @@ class ConnectFour:
         self.max_depth = max_depth
         self.queue = []  # stores nodes for tree visualization
         self.scores = [0, 0]  # scores for player 1 and player 2
+        self.k=5
 
     def get_valid_moves(self):
         """Return list of valid columns."""
         return [col for col in range(self.num_cols) if self.height[col] < self.num_rows]
+    
 
     def save_and_encode_tree(self):
-        """Encode the board state into the queue for tree visualization."""
-        combined_board = (self.player2_board << 1) | self.player1_board
-        self.queue.append(combined_board)
+        connect_four_board = ["."] * 42  # Use a list for the board visualization
+        self.queue.clear()  # Clear previous queue
+
+        valid_moves = self.get_valid_moves()
+
+        for column in valid_moves:
+            # Get the bitboard for Player 1 and Player 2
+            copy_board1 = self.player1_board
+            copy_board2 = self.player2_board
+
+            # Temporarily drop a piece for Player 2
+            temp_board2 = self.drop_piece(copy_board2, column)
+
+            # Visualize the bitboard state
+            for i in range(42):
+                if copy_board1 & (1 << i):  # Check if the i-th bit is set for Player 1
+                    connect_four_board[i] = 'X'
+                elif temp_board2 & (1 << i):  # Check if the i-th bit is set for Player 2
+                    connect_four_board[i] = 'O'
+                else:
+                    connect_four_board[i] = '.'  # Empty space
+
+            # Add the visualized board to the queue
+            self.queue.append("".join(connect_four_board))
+            self.undo_drop_piece(copy_board2,column)
+            
+    
+  
+
 
     def decode_and_print_tree(self):
         """Decode and display all boards stored in the queue."""
-        rows = self.num_rows
-        cols = self.num_cols
-        for node_index, combined_board in enumerate(self.queue):
+        for node_index, c4_board in enumerate(self.queue):
             print(f"Node {node_index}:")
-            board = [[' ' for _ in range(cols)] for _ in range(rows)]
-            for col in range(cols):
-                for row in range(rows):
-                    bit_position = (col * rows) + row
-                    cell_value = (combined_board >> (bit_position * 2)) & 0b11
-                    if cell_value == 0b01:  # Player 1
-                        board[row][col] = 'X'
-                    elif cell_value == 0b10:  # Player 2
-                        board[row][col] = 'O'
-            for row in reversed(board):  # Print bottom row last
-                print('|' + '|'.join(row) + '|')
+            print(c4_board)
             print()
 
     def drop_piece(self, player_bitboard, column):
@@ -46,7 +62,6 @@ class ConnectFour:
         mask = 1 << (column * self.num_rows + self.height[column])
         player_bitboard |= mask
         self.height[column] += 1
-        self.save_and_encode_tree()  # Save the node after every move
         return player_bitboard
 
     def undo_drop_piece(self, player_bitboard, column):
@@ -111,6 +126,7 @@ class ConnectFour:
                     break
             return min_value, best_move
 
+
     def print_board(self):
         """Visualize the current board."""
         board = [[' ' for _ in range(self.num_cols)] for _ in range(self.num_rows)]
@@ -148,22 +164,31 @@ class ConnectFour:
         print(f"Player 1 score: {self.scores[0]} | Player 2 score: {self.scores[1]}")
 
     def play_game(self):
+        count=0
         """Play the game."""
         while True:
             self.print_board()
 
             if not self.get_valid_moves():
-                print("It's a tie!")
+                print("game over")
                 break
 
             # Player's turn
             self.player_turn()
             self.post_scores()
+            self.save_and_encode_tree()
             self.decode_and_print_tree()
+            
+
+        
+            
 
             # AI's turn
             self.computer_turn()
             self.post_scores()
+            
+           
+            
 
 
 # Run the game
