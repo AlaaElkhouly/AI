@@ -5,7 +5,30 @@ def bitboard_to_array(bitboard, rows, cols):
             bit_position = i * cols + j
             board[i, j] = (bitboard >> bit_position) & 1
     return board
- 
+    
+def check_win(board, piece):
+    # Horizontal
+    for row in range(ROWS):
+        for col in range(COLS - 3):
+            if all(board[row, col + i] == piece for i in range(4)):
+                return True
+    # vertical
+    for row in range(ROWS - 3):
+        for col in range(COLS):
+            if all(board[row + i, col] == piece for i in range(4)):
+                return True
+    #diagonal ( sloping downward from left to right)
+    for row in range(ROWS - 3):
+        for col in range(COLS - 3):
+            if all(board[row + i, col + i] == piece for i in range(4)):
+                return True
+    # diagonal(sloping downward from right to left)
+    for row in range(3, ROWS):
+        for col in range(COLS - 3):
+            if all(board[row - i, col + i] == piece for i in range(4)):
+                return True
+
+    return False 
 def heuristic(bitboard, piece):
      board = bitboard_to_array(bitboard, ROWS, COLS)
     score = 0
@@ -61,7 +84,7 @@ def evaluate_window_heuristic1(window, piece, row, col, direction):
     if count_piece == 4:
         return float('inf')  # Absolute win
 
-    # Feature 2: Three connected chessmen
+    # Feature 2: Three connected (3 situation)
     if count_piece == 3 and count_empty == 1:
         adjacent_availability = check_adjacent_availability(board, row, col, direction, piece)
         if adjacent_availability == "both":
@@ -71,17 +94,17 @@ def evaluate_window_heuristic1(window, piece, row, col, direction):
         else:
             score += 0  # No promising future
 
-    # Feature 3: Two connected chessmen
-    if count_piece == 2 and count_empty == 2:
-        available_squares = count_available_squares(board, row, col, direction)
-        if available_squares >= 5:
-            score += 40000
-        elif available_squares == 4:
-            score += 30000
-        elif available_squares == 3:
-            score += 20000
-        elif available_squares == 2:
-            score += 10000
+    # Feature 3: Two connected (3 situations)
+if count_piece == 2 and count_empty == 2:
+    available_squares = count_available_squares(board, row, col, direction)
+    if available_squares >= 5:
+        score += 40000  # Left Situation (most promising future)
+    elif available_squares == 4:
+        score += 30000  # Middle Situation (moderate future)
+    elif available_squares == 3:
+        score += 20000  # Right Situation (less promising)
+    elif available_squares == 2:
+        score += 10000  # Least favorable but still valid
 
     # Block opponent's three connected
     if count_opp_piece == 3 and count_empty == 1:
