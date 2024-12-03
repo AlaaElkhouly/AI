@@ -29,7 +29,3 @@ def BFS(start_state):
                     queue.append((state, path + [state],previous_moves+[move]))
     print("Sorry, no path found :(")
     return None  # no solution
-
-#EXAMPLE
-
-##current_state, path, previous_moves,nodes_explored=BFS(start_state)
