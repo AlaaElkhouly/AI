@@ -1,6 +1,7 @@
 import math
 from anytree import Node, RenderTree
 
+
 class ConnectFour:
     def __init__(self, max_depth=4):
         self.player1_board = 0b0  # bitboard for player 1
@@ -12,8 +13,9 @@ class ConnectFour:
         self.queue = []  # stores nodes for tree visualization
         self.scores = [0, 0]  # scores for player 1 and player 2
         self.k=4
-        
-        
+
+           
+    
 ##get all valid plays from height of board##-----------------------------------------------------
     def get_valid_moves(self):
         """Return list of valid columns."""
@@ -21,7 +23,8 @@ class ConnectFour:
 
 
 
-##tree operations##---------------------------------------------------------------------------------   
+##tree operations##--------------------------------------------------------------------------------- 
+   
     def save_and_encode_tree(self):
         connect_four_board = ["."] * 42  # Use a list for the board visualization
         valid_moves = self.get_valid_moves()
@@ -42,6 +45,13 @@ class ConnectFour:
                     connect_four_board[i] = 'O'
                 else:
                     connect_four_board[i] = '.'  # Empty space
+            
+            child_node = TreeNode(board_string, depth=root.depth + 1)
+            root.add_child(child_node)
+
+        # Undo the move and recursively build the subtree
+        self.undo_drop_piece(copy_board2, column)
+        self.save_and_encode_tree(child_node, max_depth)
 
             # Add the visualized board to the queue
             self.queue.append("".join(connect_four_board))
