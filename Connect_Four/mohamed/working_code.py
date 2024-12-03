@@ -10,7 +10,7 @@ class ConnectFour:
         self.max_depth = max_depth
         self.queue = []  # stores nodes for tree visualization
         self.scores = [0, 0]  # scores for player 1 and player 2
-        self.k=1
+        self.k=9
         
         
 ##get all valid plays from height of board##-----------------------------------------------------
