@@ -12,7 +12,7 @@ class ConnectFour(NodeMixin):
         self.num_cols = 7
         self.max_depth = max_depth
         self.scores = [0, 0]  # Scores for player 1 and player 2
-        self.k = 3 # Max depth for the tree search
+        self.k = 1  # Max depth for the tree search
         self.tree_root = Node("Root")
         self.PLAYER_PIECE = 1
         self.AI_PIECE = 2 
@@ -362,12 +362,11 @@ class ConnectFour(NodeMixin):
             print('|' + '|'.join(row) + '|')
 
 ##-----------------------------------------------------------minimax-------------------------------------------------------------------------------------###
-    def minimax_with_alphabeta(self, depth, alpha, beta, maximizing_player, parent_node=None, current_level=1):
+    def minimax_with_alphabeta(self, depth, alpha, beta, maximizing_player, parent_node=None):
         if depth == 0 or not self.get_valid_moves():
             score = self.evaluate_board()
-            # Attach a leaf node only if within the first k levels
-            if self.k is None or current_level <= self.k:
-                Node(f"score: {score}", parent=parent_node)
+            # Attach leaf node with score
+            Node(f"score: {score}", parent=parent_node)
             return score, None
 
         valid_moves = self.get_valid_moves()
@@ -376,65 +375,49 @@ class ConnectFour(NodeMixin):
         if maximizing_player:
             max_value = -math.inf
             for column in valid_moves:
-                # Simulate the move for player 1
                 self.player1_board = self.drop_piece(self.player1_board, column)
-                board_string = self.generate_board_string()
-
-                # Create a child node only if within the first k levels
-                child_node = None
-                if self.k is None or current_level < self.k:
-                    child_node = Node(f"(Max) Move: {column}, board: {board_string}", parent=parent_node)
-
-                # Recursive call with updated alpha and current level
-                value, _ = self.minimax_with_alphabeta(
-                    depth - 1, alpha, beta, False, child_node, current_level + 1
-                )
+                board_string= self.generate_board_string()
+                
+                # Create child node
+                child_node = Node(f"(ai max) Move to column: {column} ,board: {board_string} ", parent=parent_node)
+                
+                value, _ = self.minimax_with_alphabeta(depth - 1, alpha, beta, False, child_node)
                 self.player1_board = self.undo_drop_piece(self.player1_board, column)
 
-                # Update the max value and alpha
                 if value > max_value:
                     max_value = value
                     best_move = column
 
                 alpha = max(alpha, value)
-                if alpha >= beta:  # Prune the remaining branches
+                if alpha >= beta:
                     break
             return max_value, best_move
         else:
             min_value = math.inf
             for column in valid_moves:
-                # Simulate the move for player 2
                 self.player2_board = self.drop_piece(self.player2_board, column)
-                board_string = self.generate_board_string()
+                board_string= self.generate_board_string()
 
-                # Create a child node only if within the first k levels
-                child_node = None
-                if self.k is None or current_level < self.k:
-                    child_node = Node(f"(Min) Move: {column}, board: {board_string}", parent=parent_node)
+                # Create child node
+                child_node = Node(f"(player min)Move: {column}, board: {board_string} ", parent=parent_node)
 
-                # Recursive call with updated beta and current level
-                value, _ = self.minimax_with_alphabeta(
-                    depth - 1, alpha, beta, True, child_node, current_level + 1
-                )
+                value, _ = self.minimax_with_alphabeta(depth - 1, alpha, beta, True, child_node)
                 self.player2_board = self.undo_drop_piece(self.player2_board, column)
 
-                # Update the min value and beta
                 if value < min_value:
                     min_value = value
                     best_move = column
 
                 beta = min(beta, value)
-                if beta <= alpha:  # Prune the remaining branches
+                if beta <= alpha:
                     break
             return min_value, best_move
 
-
-    def minimax(self, depth, maximizing_player, parent_node=None, current_level=1):
+    def minimax(self, depth, maximizing_player, parent_node=None):
         if depth == 0 or not self.get_valid_moves():
             score = self.evaluate_board()
-            # Attach a leaf node only if within the first k levels
-            if self.k is None or current_level <= self.k:
-                Node(f"score: {score}", parent=parent_node)
+            # Attach leaf node with score
+            Node(f"score: {score}", parent=parent_node)
             return score, None
 
         valid_moves = self.get_valid_moves()
@@ -443,23 +426,16 @@ class ConnectFour(NodeMixin):
         if maximizing_player:
             max_value = -math.inf
             for column in valid_moves:
-                # Simulate the move for player 1
                 self.player1_board = self.drop_piece(self.player1_board, column)
                 board_string = self.generate_board_string()
-
-                # Create a child node only if within the first k levels
-                child_node = None
-                if self.k is None or current_level < self.k:
-                    child_node = Node(f"(Max) Move: {column}, board: {board_string}", parent=parent_node)
-
-
-                # Recursive call with incremented current level
-                value, _ = self.minimax(depth - 1, False, child_node, current_level + 1)
-
-                # Undo the move
+                
+                # Create child node
+                
+                child_node = Node(f"(Max) Move: {column}, board: {board_string}", parent=parent_node)
+                
+                value, _ = self.minimax(depth - 1, False, child_node)
                 self.player1_board = self.undo_drop_piece(self.player1_board, column)
 
-                # Update the best move and max value
                 if value > max_value:
                     max_value = value
                     best_move = column
@@ -467,26 +443,20 @@ class ConnectFour(NodeMixin):
         else:
             min_value = math.inf
             for column in valid_moves:
-                # Simulate the move for player 2
                 self.player2_board = self.drop_piece(self.player2_board, column)
                 board_string = self.generate_board_string()
 
-                # Create a child node only if within the first k levels
-                child_node = None
-                if self.k is None or current_level < self.k:
-                    child_node = Node(f"(Min) Move: {column}, board: {board_string}", parent=parent_node)
+                # Create child node
+                child_node = Node(f"(Min) Move: {column}, board: {board_string}", parent=parent_node)
 
-                # Recursive call with incremented current level
-                value, _ = self.minimax(depth - 1, True, child_node, current_level + 1)
-
-                # Undo the move
+                value, _ = self.minimax(depth - 1, True, child_node)
                 self.player2_board = self.undo_drop_piece(self.player2_board, column)
 
-                # Update the best move and min value
                 if value < min_value:
                     min_value = value
                     best_move = column
             return min_value, best_move
+
 
 ##-------------------------------------------------------------------gameplay--------------------------------------------------------------##
         
@@ -518,7 +488,7 @@ class ConnectFour(NodeMixin):
         self.tree_root = Node("Root")  # Reset the tree for this turn
         _, move = self.minimax_with_alphabeta(self.max_depth, float('-inf'), float('inf'), True, self.tree_root)
         self.player1_board = self.drop_piece(self.player1_board, move)
-        self.display_tree()
+        #self.display_tree()
         ai_connect_4,player_connect_4=self.calculate_utility()                      
         print(f"AI chooses column {move}\n ai connected {ai_connect_4}, player connected{player_connect_4}")
 
@@ -546,7 +516,7 @@ class ConnectFour(NodeMixin):
             # Player's turn
             self.player_turn()
             # AI's turn
-            self.computer_turn()
+            self.computer_turn_alphabeta()
             
 
             
@@ -555,4 +525,4 @@ class ConnectFour(NodeMixin):
 # Run the game
 if __name__ == "__main__":
     game = ConnectFour(max_depth=4)
-    game.play_game_alphabeta()
+    game.play_game()
