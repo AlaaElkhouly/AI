@@ -76,13 +76,13 @@ class ConnectFour(NodeMixin):
         for col in range(self.num_cols):
             for row in range(self.column_heights[col]):
                 if (self.player1_board >> (col * self.num_rows + row)) & 1:
-                    board[row][col] = 1
-                elif (self.player2_board >> (col * self.num_rows + row)) & 1:
                     board[row][col] = 2
+                elif (self.player2_board >> (col * self.num_rows + row)) & 1:
+                    board[row][col] = 1
         #print(board)
         return board
 
-    def heuristic(self, bitboard, piece):
+    def heuristic(self, piece):
         ROWS = self.num_rows
         COLS = self.num_cols
         board=self.bitboard_to_array()
@@ -274,8 +274,8 @@ class ConnectFour(NodeMixin):
 
     def evaluate_board(self):
        # player_score = self.heuristic(self.player1_board, self.PLAYER_PIECE)
-        ai_score = self.heuristic(self.player1_board, self.AI_PIECE)
-        player_score=self.heuristic(self.player2_board, self.PLAYER_PIECE)
+        ai_score = self.heuristic( self.AI_PIECE)
+        player_score=self.heuristic(self.PLAYER_PIECE)
         self.scores = [ai_score,player_score]
         #print(f"Debug: Player score = {player_score}, AI score = {ai_score}")
         return ai_score
@@ -497,11 +497,11 @@ class ConnectFour(NodeMixin):
             
 
             # AI's turn
-            self.computer_turn_alphabeta()
+            self.computer_turn()
             
 
 
 # Run the game
 if __name__ == "__main__":
-    game = ConnectFour(max_depth=1)
+    game = ConnectFour(max_depth=4)
     game.play_game()
