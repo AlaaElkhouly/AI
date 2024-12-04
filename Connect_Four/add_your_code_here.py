@@ -126,9 +126,9 @@ class ConnectFour:
             self.count+=1
             max_value = -math.inf
             for column in valid_moves:
-                self.player2_board = self.drop_piece(self.player2_board, column)
+                self.player1_board = self.drop_piece(self.player1_board, column)
                 value, _ = self.minimax(depth - 1, alpha, beta, False)
-                self.player2_board = self.undo_drop_piece(self.player2_board, column)
+                self.player1_board = self.undo_drop_piece(self.player1_board, column)
 
                 if value > max_value:
                     max_value = value
@@ -141,9 +141,9 @@ class ConnectFour:
         else:
             min_value = math.inf
             for column in valid_moves:
-                self.player1_board = self.drop_piece(self.player1_board, column)
+                self.player2_board = self.drop_piece(self.player2_board, column)
                 value, _ = self.minimax(depth - 1, alpha, beta, True)
-                self.player1_board = self.undo_drop_piece(self.player1_board, column)
+                self.player2_board = self.undo_drop_piece(self.player2_board, column)
 
                 if value < min_value:
                     min_value = value
@@ -219,6 +219,7 @@ class ConnectFour:
 
 
 ###player turns  ---> computer is max###-----------------------------------------------------------------------
+##max player gets bitbiard1##
     def player_turn(self):
         """Handle player's move."""
         while True:
@@ -230,7 +231,7 @@ class ConnectFour:
                     break
             except ValueError:
                 print("Please enter a number between 0 and 6.")
-        self.player1_board = self.drop_piece(self.player1_board, move)
+        self.player2_board = self.drop_piece(self.player2_board, move)
 
     def computer_turn(self):
         """Handle AI's move using Minimax."""
