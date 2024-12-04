@@ -389,9 +389,9 @@ class ConnectFour:
         if maximizing_player:
             max_value = -math.inf
             for column in valid_moves:
-                self.player1_board = self.drop_piece(self.player1_board, column)
+                self.player2_board = self.drop_piece(self.player2_board, column)
                 value, _ = self.minimax(depth - 1, alpha, beta, False)
-                self.player1_board = self.undo_drop_piece(self.player1_board, column)
+                self.player2_board = self.undo_drop_piece(self.player2_board, column)
 
                 if value > max_value:
                     max_value = value
@@ -404,9 +404,9 @@ class ConnectFour:
         else:
             min_value = math.inf
             for column in valid_moves:
-                self.player2_board = self.drop_piece(self.player2_board, column)
+                self.player1_board = self.drop_piece(self.player1_board, column)
                 value, _ = self.minimax(depth - 1, alpha, beta, True)
-                self.player2_board = self.undo_drop_piece(self.player2_board, column)
+                self.player1_board = self.undo_drop_piece(self.player1_board, column)
 
                 if value < min_value:
                     min_value = value
@@ -508,6 +508,7 @@ class ConnectFour:
         self.evaluate_board()
         print(f"AI score: {self.scores[0]}")
         print(f"numeber of connected_4:{self.count_sequences(self.AI_PIECE,4,board)}")
+        print(f"numeber of connected_4 for player:{self.count_sequences(self.PLAYER_PIECE,4,board)}")
 
     def play_game(self):
         count=0
