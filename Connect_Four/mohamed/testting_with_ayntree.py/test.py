@@ -11,7 +11,7 @@ class ConnectFour(NodeMixin):
         self.max_depth = max_depth
         self.scores = [0, 0]  # Scores for player 1 and player 2
         self.k = 1  # Max depth for the tree search
-        self.root_node = None  # Root of the minimax tree
+        self.tree_root = Node("Root")  
 
     def get_valid_moves(self):
         """Return list of valid columns (where a piece can be dropped)."""
@@ -66,15 +66,22 @@ class ConnectFour(NodeMixin):
             self.player1_board = self.undo_drop_piece(self.player1_board, column)
 
     def generate_board_string(self):
-        """Generate a string representation of the current board."""
-        board = [["." for _ in range(self.num_cols)] for _ in range(self.num_rows)]
-        for col in range(self.num_cols):
-            for row in range(self.column_heights[col]):
-                if (self.player1_board >> (col * self.num_rows + row)) & 1:
-                    board[row][col] = "X"
-                elif (self.player2_board >> (col * self.num_rows + row)) & 1:
-                    board[row][col] = "O"
-        return "\n".join("".join(row) for row in reversed(board))
+        connect_four_board = ["."] * 42  # Use a list for the board visualization
+        score=self.evaluate_board()
+
+        # Visualize the bitboard state
+        for i in range(42):
+            if self.player1_board & (1 << i):  # Check if the i-th bit is set for Player 1
+                connect_four_board[i] = 'X'
+            elif self.player2_board & (1 << i):  # Check if the i-th bit is set for Player 2
+                connect_four_board[i] = 'O'
+            else:
+                connect_four_board[i] = '.'  # Empty space
+        str_board="".join(connect_four_board)
+        printed=str_board 
+        return(printed)
+
+    
 
     def print_tree(self):
         """Print the tree using anytree's RenderTree."""
@@ -85,6 +92,10 @@ class ConnectFour(NodeMixin):
             print(f"{pre}{node.name}: Depth {node.depth}")
             print(node.board)
             print()
+
+    def display_tree(self):
+        for pre, fill, node in RenderTree(self.tree_root):
+            print(f"{pre}{node.name}")
 
     def print_board(self):
         """Print the current board."""
@@ -102,13 +113,12 @@ class ConnectFour(NodeMixin):
         for row in reversed(board):
             print('|' + '|'.join(row) + '|')
 
-    def minimax(self, depth, alpha, beta, maximizing_player):
-        """Minimax with alpha-beta pruning."""
+    def minimax(self, depth, alpha, beta, maximizing_player, parent_node=None):
         if depth == 0 or not self.get_valid_moves():
-            return self.evaluate_board(), None
-        
-        if depth >= self.max_depth - self.k:
-            self.save_and_encode_tree()
+            score = self.evaluate_board()
+            # Attach leaf node with score
+            Node(f"score: {score}", parent=parent_node)
+            return score, None
 
         valid_moves = self.get_valid_moves()
         best_move = None
@@ -117,7 +127,12 @@ class ConnectFour(NodeMixin):
             max_value = -math.inf
             for column in valid_moves:
                 self.player1_board = self.drop_piece(self.player1_board, column)
-                value, _ = self.minimax(depth - 1, alpha, beta, False)
+                board_string= self.generate_board_string()
+                
+                # Create child node
+                child_node = Node(f"(Max) Move: {column} ,board: {board_string} ", parent=parent_node)
+                
+                value, _ = self.minimax(depth - 1, alpha, beta, False, child_node)
                 self.player1_board = self.undo_drop_piece(self.player1_board, column)
 
                 if value > max_value:
@@ -132,7 +147,12 @@ class ConnectFour(NodeMixin):
             min_value = math.inf
             for column in valid_moves:
                 self.player2_board = self.drop_piece(self.player2_board, column)
-                value, _ = self.minimax(depth - 1, alpha, beta, True)
+                board_string= self.generate_board_string()
+
+                # Create child node
+                child_node = Node(f"(Min)Move: {column}, board: {board_string} ", parent=parent_node)
+
+                value, _ = self.minimax(depth - 1, alpha, beta, True, child_node)
                 self.player2_board = self.undo_drop_piece(self.player2_board, column)
 
                 if value < min_value:
@@ -155,18 +175,20 @@ class ConnectFour(NodeMixin):
                     break
             except ValueError:
                 print("Please enter a number between 0 and 6.")
-        self.player1_board = self.drop_piece(self.player1_board, move)
+        self.player2_board = self.drop_piece(self.player2_board, move)
 
     def computer_turn(self):
-        """Handle AI's move using Minimax."""
         print("AI is thinking...")
-        _, move = self.minimax(self.max_depth, float('-inf'), float('inf'), True)
+        self.tree_root = Node("Root")  # Reset the tree for this turn
+        _, move = self.minimax(self.max_depth, float('-inf'), float('inf'), True, self.tree_root)
         print(f"AI chooses column {move}")
-        self.player2_board = self.drop_piece(self.player2_board, move)
+        self.player1_board = self.drop_piece(self.player1_board, move)
+        self.display_tree()  # Display the tree after the AI move
+
 
     def post_scores(self):
         """Display the scores."""
-        print(f"Player 1 score: {self.scores[0]} | Player 2 score: {self.scores[1]}")
+        print(f"computer score: {self.scores[0]} | Player 2 score: {self.scores[1]}")
 
     def play_game(self):
         """Play the game."""
@@ -183,10 +205,10 @@ class ConnectFour(NodeMixin):
 
             # AI's turn
             self.computer_turn()
-            self.print_tree()
+            
 
 
 # Run the game
 if __name__ == "__main__":
-    game = ConnectFour(max_depth=4)
+    game = ConnectFour(max_depth=2)
     game.play_game()
