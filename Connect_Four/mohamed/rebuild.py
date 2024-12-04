@@ -4,7 +4,7 @@ import numpy as np
 import random
 
 class ConnectFour(NodeMixin):
-    def __init__(self, max_depth=4):
+    def __init__(self, max_depth=5):
         self.player1_board = 0b0  # Bitboard for player 1 player is ai
         self.player2_board = 0b0  # Bitboard for player 2
         self.column_heights = [0] * 7  # Column heights
@@ -27,8 +27,6 @@ class ConnectFour(NodeMixin):
 
     def drop_piece(self, player_bitboard, column):
         """Simulate dropping a piece in the given column."""
-        if self.column_heights[column] >= self.num_rows:
-            raise ValueError("Column is full!")
         mask = 1 << (column * self.num_rows + self.column_heights[column])
         player_bitboard |= mask
         self.column_heights[column] += 1

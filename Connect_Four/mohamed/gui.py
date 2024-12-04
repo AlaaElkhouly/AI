@@ -17,6 +17,8 @@ class GUI(ConnectFour):
         self.RADIUS = self.CELL_SIZE // 2 - 10
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT + 100))
         self.font = pygame.font.Font(None, 32)
+        self.small_font = pygame.font.Font(None, 24)
+        self.minimax_mode = 0 
         # Asking user for maximum depth and k using a text input box
 
         # Asking user for maximum depth and k using console input
@@ -73,7 +75,10 @@ class GUI(ConnectFour):
                                    (col * self.CELL_SIZE + self.CELL_SIZE // 2, row * self.CELL_SIZE + self.CELL_SIZE + self.CELL_SIZE // 2),
                                    self.RADIUS)
                 
-##-----------------------------------------------------player mode--------------------------------------------##               
+##-----------------------------------------------------toggle ai  mode--------------------------------------------##
+    def toggle_minimax_mode(self):
+        self.minimax_mode = (self.minimax_mode + 1) % 3  # Toggle between 0, 1, and 2
+                      
     def draw_minimax_toggle(self):
             """Draw the minimax toggle button."""
             x, y, width, height = self.SCREEN_WIDTH - 140, 10, 140, 40  # Positioned at the far right
@@ -91,7 +96,14 @@ class GUI(ConnectFour):
         col = pos[0] // self.CELL_SIZE
         if col in self.get_valid_moves():
             self.player2_board = self.drop_piece(self.player2_board, col)
-            self.current_player = 1
+            if self.minimax_mode==0:
+                self.current_player = 1     ##regular minimax
+                
+            elif self.minimax_mode==1:
+                self.current_player = 3     ##alpha-beta
+                
+            elif self.minimax_mode==2:
+                self.current_player = 4       ##expected
             self.update_game_state()
 ##-----------------------------------------------------different ai  modes--------------------------------------------##
     def ai_turn_regular_minimax(self):
@@ -110,7 +122,7 @@ class GUI(ConnectFour):
         """AI's move."""
         print("AI is thinking...")
         self.tree_root = Node("Root")  # Reset the tree for this turn
-        _, move = self.minimax_with_alphabeta(self.max_depth, True, self.tree_root)
+        _, move = self.minimax_with_alphabeta(self.max_depth, float('-inf'), float('inf'), True, self.tree_root)
         self.player1_board = self.drop_piece(self.player1_board, move)
         self.display_tree() # Display the tree after the AI move
         ai_connect_4,player_connect_4=self.calculate_utility()                      
@@ -138,6 +150,7 @@ class GUI(ConnectFour):
         """Main game loop."""
         while self.running:
             self.draw_board()
+            self.draw_minimax_toggle() 
             pygame.display.update()
 
             for event in pygame.event.get():
@@ -147,6 +160,13 @@ class GUI(ConnectFour):
 
                 if self.current_player == 2 and event.type == pygame.MOUSEBUTTONDOWN:
                     self.handle_click(event.pos)
+                 # Handle the click for toggling the button
+                 
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    x, y = event.pos
+                    # Check if the mouse click is within the Minimax toggle button
+                    if self.SCREEN_WIDTH - 140 <= x <= self.SCREEN_WIDTH - 140 + 140 and 10 <= y <= 10 + 40:
+                        self.toggle_minimax_mode()  # Toggle the mode when clicked
 
             if self.current_player == 1:
                 self.ai_turn_regular_minimax()
