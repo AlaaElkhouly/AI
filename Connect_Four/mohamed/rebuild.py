@@ -76,13 +76,13 @@ class ConnectFour(NodeMixin):
         for col in range(self.num_cols):
             for row in range(self.column_heights[col]):
                 if (self.player1_board >> (col * self.num_rows + row)) & 1:
-                    board[row][col] = 1
+                    board[row][col] = 2                                             ##for maximizing player
                 elif (self.player2_board >> (col * self.num_rows + row)) & 1:
-                    board[row][col] = 2
+                    board[row][col] = 1                                             ##1 for minimizing plaers
         #print(board)
         return board
 
-    def heuristic(self, bitboard, piece):
+    def heuristic(self, piece):
         ROWS = self.num_rows
         COLS = self.num_cols
         board=self.bitboard_to_array()
@@ -274,15 +274,16 @@ class ConnectFour(NodeMixin):
 
     def evaluate_board(self):
        # player_score = self.heuristic(self.player1_board, self.PLAYER_PIECE)
-        ai_score = self.heuristic(self.player1_board, self.AI_PIECE)
-        player_score=self.heuristic(self.player2_board, self.PLAYER_PIECE)
+        ai_score = self.heuristic( self.AI_PIECE)
+        player_score=self.heuristic(self.PLAYER_PIECE)
         self.scores = [ai_score,player_score]
         #print(f"Debug: Player score = {player_score}, AI score = {ai_score}")
         return ai_score
 
 
 ##----------------------------------------------calculate utility--------------------------------------------##
-    def count_sequences(self, player, length,board):
+    def count_sequences(self, player, length):
+            board=self.bitboard_to_array()
             """Count sequences of 'length' for a given player."""
             count = 0
             for row in range(self.num_rows):
@@ -306,6 +307,12 @@ class ConnectFour(NodeMixin):
                         count += 1
             return count
 
+
+    def calculate_utility(self):
+        ai_utility=self.count_sequences(2,4)
+        player_utility=self.count_sequences(1,4)
+
+        print(f"ai utility is:{ai_utility} \n player utility is {player_utility}")
 
 
 
@@ -422,6 +429,7 @@ class ConnectFour(NodeMixin):
                 board_string = self.generate_board_string()
                 
                 # Create child node
+                
                 child_node = Node(f"(Max) Move: {column}, board: {board_string}", parent=parent_node)
                 
                 value, _ = self.minimax(depth - 1, False, child_node)
@@ -478,30 +486,31 @@ class ConnectFour(NodeMixin):
         self.tree_root = Node("Root")  # Reset the tree for this turn
         _, move = self.minimax_with_alphabeta(self.max_depth, float('-inf'), float('inf'), True, self.tree_root)
         self.player1_board = self.drop_piece(self.player1_board, move)
-        self.display_tree() # Display the tree after the AI move
+        #self.display_tree()
         print(f"AI chooses column {move}")
+        self.calculate_utility()
 
     def play_game(self):
         """Play the game."""
         while True:
             self.print_board_for_player()
             print(f"ai score is : {self.evaluate_board()}")
+            
 
             if not self.get_valid_moves():
                 print("Game over!")
-                ##utility calculation here
+                self.calculate_utility()
                 break
 
             # Player's turn
             self.player_turn()
-            
 
             # AI's turn
-            self.computer_turn_alphabeta()
+            self.computer_turn()
             
 
 
 # Run the game
 if __name__ == "__main__":
-    game = ConnectFour(max_depth=1)
+    game = ConnectFour(max_depth=4)
     game.play_game()
