@@ -76,9 +76,9 @@ class ConnectFour(NodeMixin):
         for col in range(self.num_cols):
             for row in range(self.column_heights[col]):
                 if (self.player1_board >> (col * self.num_rows + row)) & 1:
-                    board[row][col] = 2
+                    board[row][col] = 2                                             ##for maximizing player
                 elif (self.player2_board >> (col * self.num_rows + row)) & 1:
-                    board[row][col] = 1
+                    board[row][col] = 1                                             ##1 for minimizing plaers
         #print(board)
         return board
 
@@ -282,7 +282,8 @@ class ConnectFour(NodeMixin):
 
 
 ##----------------------------------------------calculate utility--------------------------------------------##
-    def count_sequences(self, player, length,board):
+    def count_sequences(self, player, length):
+            board=self.bitboard_to_array()
             """Count sequences of 'length' for a given player."""
             count = 0
             for row in range(self.num_rows):
@@ -306,6 +307,12 @@ class ConnectFour(NodeMixin):
                         count += 1
             return count
 
+
+    def calculate_utility(self):
+        ai_utility=self.count_sequences(2,4)
+        player_utility=self.count_sequences(1,4)
+
+        print(f"ai utility is:{ai_utility} \n player utility is {player_utility}")
 
 
 
@@ -422,6 +429,7 @@ class ConnectFour(NodeMixin):
                 board_string = self.generate_board_string()
                 
                 # Create child node
+                
                 child_node = Node(f"(Max) Move: {column}, board: {board_string}", parent=parent_node)
                 
                 value, _ = self.minimax(depth - 1, False, child_node)
@@ -478,23 +486,24 @@ class ConnectFour(NodeMixin):
         self.tree_root = Node("Root")  # Reset the tree for this turn
         _, move = self.minimax_with_alphabeta(self.max_depth, float('-inf'), float('inf'), True, self.tree_root)
         self.player1_board = self.drop_piece(self.player1_board, move)
-        self.display_tree() # Display the tree after the AI move
+        #self.display_tree()
         print(f"AI chooses column {move}")
+        self.calculate_utility()
 
     def play_game(self):
         """Play the game."""
         while True:
             self.print_board_for_player()
             print(f"ai score is : {self.evaluate_board()}")
+            
 
             if not self.get_valid_moves():
                 print("Game over!")
-                ##utility calculation here
+                self.calculate_utility()
                 break
 
             # Player's turn
             self.player_turn()
-            
 
             # AI's turn
             self.computer_turn()
