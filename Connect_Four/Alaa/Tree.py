@@ -1,4 +1,6 @@
-#_________________________________________TREE CODE_______________________________________________________
+"Tree Working Code"
+"Please Copy it in an empty file to edit it"
+"DO NOT EDIT HERE! (Please)"
 import tkinter as tk
 from tkinter import ttk
 import numpy as np
