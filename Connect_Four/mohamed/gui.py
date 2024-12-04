@@ -4,10 +4,10 @@ import sys
 
 class GUI(ConnectFour):
     def __init__(self, max_depth=4):
-        super().__init__(max_depth)
+        
         pygame.init()
         pygame.display.set_caption("Connect Four")
-
+        super().__init__(max_depth)
         # Screen dimensions and constants
         self.SCREEN_WIDTH = 700
         self.SCREEN_HEIGHT = 600
@@ -17,12 +17,28 @@ class GUI(ConnectFour):
         self.RADIUS = self.CELL_SIZE // 2 - 10
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT + 100))
         self.font = pygame.font.Font(None, 32)
+        # Asking user for maximum depth and k using a text input box
+        
+        # Asking user for maximum depth and k using console input
+        self.max_depth = self.get_console_input("Enter the maximum depth (e.g., 4):")
+        self.k = self.get_console_input("Enter the truncation (k) value (e.g., 3):")
 
+        
         # Game state
         self.board = self.get_corrected_board()
         self.current_player = 2  # Player starts as 2
         self.running = True
-
+        
+        
+    def get_console_input(self, prompt):
+        """Ask for user input via the console."""
+        while True:
+            try:
+                user_input = input(prompt)
+                return int(user_input)  # Convert input to an integer
+            except ValueError:
+                print("Invalid input. Please enter an integer.")
+                
     def get_corrected_board(self):
         """Override to ensure the board rows are reversed for GUI compatibility."""
         board = [[0 for _ in range(self.num_cols)] for _ in range(self.num_rows)]
