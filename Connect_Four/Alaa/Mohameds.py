@@ -1,5 +1,7 @@
 import math
-
+import random
+x=int(input("What Mode?\n1.MiniMax with Prunning\n2.MiniMax without Pruning\n3.Expected MiniMax"))
+depth=int(input("Depth?"))
 class ConnectFour:
     def __init__(self, max_depth=4):
         self.player1_board = 0b0  # bitboard for player 1
@@ -134,8 +136,10 @@ class ConnectFour:
             return {column - 1: 0.2, column: 0.6, column + 1: 0.2}
 
     # Expected minimax
-    def expected_minimax(self, depth, maximizing_player):
-        """Expected minimax to handle probabilistic moves."""
+    import random
+
+    def expectiminimax(self, depth, maximizing_player):
+        """Expected minimax to handle probabilistic moves and misplacement."""
         if depth == 0 or not self.get_valid_moves():
             return self.evaluate_board(), None
 
@@ -146,13 +150,21 @@ class ConnectFour:
             max_value = -math.inf
             for column in valid_moves:
                 expected_value = 0
-                for outcome_col, probability in self.get_probabilities(column).items():
-                    if self.height[outcome_col] >= self.num_rows:  # Skip full columns
-                        continue
-                    self.player1_board = self.drop_piece(self.player1_board, outcome_col)
-                    value, _ = self.expected_minimax(depth - 1, False)
-                    self.player1_board = self.undo_drop_piece(self.player1_board, outcome_col)
-                    expected_value += probability * value
+
+                # Get possible outcome columns and their probabilities
+                probabilities = self.get_probabilities(column)
+
+                # Choose one of the columns based on the probability distribution
+                outcome_col = random.choices(list(probabilities.keys()), list(probabilities.values()))[0]
+                # Ensure the chosen column isn't full
+                if self.height[outcome_col] >= self.num_rows:  # Skip full columns
+                    continue
+
+                # Drop the piece in the chosen column based on misplacement probability
+                self.player1_board = self.drop_piece(self.player1_board, outcome_col)
+                value, _ = self.expectiminimax(depth - 1, False)
+                self.player1_board = self.undo_drop_piece(self.player1_board, outcome_col)
+                expected_value += probabilities[outcome_col] * value
 
                 if expected_value > max_value:
                     max_value = expected_value
@@ -163,19 +175,30 @@ class ConnectFour:
             min_value = math.inf
             for column in valid_moves:
                 expected_value = 0
-                for outcome_col, probability in self.get_probabilities(column).items():
-                    if self.height[outcome_col] >= self.num_rows:  # Skip full columns
-                        continue
-                    self.player2_board = self.drop_piece(self.player2_board, outcome_col)
-                    value, _ = self.expected_minimax(depth - 1, True)
-                    self.player2_board = self.undo_drop_piece(self.player2_board, outcome_col)
-                    expected_value += probability * value
+
+                # Get possible outcome columns and their probabilities
+                probabilities = self.get_probabilities(column)
+
+                # Choose one of the columns based on the probability distribution
+                outcome_col = random.choices(list(probabilities.keys()), list(probabilities.values()))[0]
+
+                # Ensure the chosen column isn't full
+                if self.height[outcome_col] >= self.num_rows:  # Skip full columns
+                    continue
+
+                # Drop the piece in the chosen column based on misplacement probability
+                self.player2_board = self.drop_piece(self.player2_board, outcome_col)
+                value, _ = self.expectiminimax(depth - 1, True)
+                self.player2_board = self.undo_drop_piece(self.player2_board, outcome_col)
+                expected_value += probabilities[outcome_col] * value
 
                 if expected_value < min_value:
                     min_value = expected_value
                     best_move = column
 
             return min_value, best_move
+
+
 
     # Print board
     def print_board(self):
@@ -208,7 +231,12 @@ class ConnectFour:
     def computer_turn(self):
         """Handle AI's move using Expected Minimax."""
         print("AI is thinking...")
-        _, move = self.expected_minimax(5, True)
+        if x==1:
+            _, move = self.minimax(depth, -math.inf, math.inf, True)
+        elif x==2:
+            _, move = self.minimax(depth, True)#without alpha-beta!!!!!!!!!!!!!!!!!!!!!! 
+        else:
+            _, move = self.expectiminimax(depth, True)
         if move is not None:
             print(f"AI chooses column {move}")
             self.player2_board = self.drop_piece(self.player2_board, move)
