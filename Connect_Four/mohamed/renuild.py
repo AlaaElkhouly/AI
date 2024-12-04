@@ -71,10 +71,10 @@ class ConnectFour(NodeMixin):
 
             return False
 
-    def bitboard_to_array(self, rows, cols):
+    def bitboard_to_array(self):
         board = [[0 for _ in range(self.num_cols)] for _ in range(self.num_rows)]
         for col in range(self.num_cols):
-            for row in range(self.height[col]):
+            for row in range(self.column_heights[col]):
                 if (self.player1_board >> (col * self.num_rows + row)) & 1:
                     board[row][col] = 1
                 elif (self.player2_board >> (col * self.num_rows + row)) & 1:
@@ -85,7 +85,7 @@ class ConnectFour(NodeMixin):
     def heuristic(self, bitboard, piece):
         ROWS = self.num_rows
         COLS = self.num_cols
-        board=self.bitboard_to_array(ROWS,COLS)
+        board=self.bitboard_to_array()
         #print(board)
         score = 0
         opp_piece = self.PLAYER_PIECE if piece == self.AI_PIECE else self.AI_PIECE
@@ -282,7 +282,29 @@ class ConnectFour(NodeMixin):
 
 
 ##----------------------------------------------calculate utility--------------------------------------------##
+    def count_sequences(self, player, length,board):
+            """Count sequences of 'length' for a given player."""
+            count = 0
+            for row in range(self.num_rows):
+                for col in range(self.num_cols - length + 1):
+                    if all(board[row][col + i] == player for i in range(length)):
+                        count += 1
 
+            for row in range(self.num_rows - length + 1):
+                for col in range(self.num_cols):
+                    if all(board[row + i][col] == player for i in range(length)):
+                        count += 1
+
+            for row in range(self.num_rows - length + 1):
+                for col in range(self.num_cols - length + 1):
+                    if all(board[row + i][col + i] == player for i in range(length)):
+                        count += 1
+
+            for row in range(length - 1, self.num_rows):
+                for col in range(self.num_cols - length + 1):
+                    if all(board[row - i][col + i] == player for i in range(length)):
+                        count += 1
+            return count
 
 
 
@@ -332,7 +354,7 @@ class ConnectFour(NodeMixin):
             print('|' + '|'.join(row) + '|')
 
 ##-----------------------------------------------------------minimax-------------------------------------------------------------------------------------###
-    def minimax(self, depth, alpha, beta, maximizing_player, parent_node=None):
+    def minimax_with_alphabeta(self, depth, alpha, beta, maximizing_player, parent_node=None):
         if depth == 0 or not self.get_valid_moves():
             score = self.evaluate_board()
             # Attach leaf node with score
@@ -349,9 +371,9 @@ class ConnectFour(NodeMixin):
                 board_string= self.generate_board_string()
                 
                 # Create child node
-                child_node = Node(f"(Max) Move: {column} ,board: {board_string} ", parent=parent_node)
+                child_node = Node(f"(ai max) Move to column: {column} ,board: {board_string} ", parent=parent_node)
                 
-                value, _ = self.minimax(depth - 1, alpha, beta, False, child_node)
+                value, _ = self.minimax_with_alphabeta(depth - 1, alpha, beta, False, child_node)
                 self.player1_board = self.undo_drop_piece(self.player1_board, column)
 
                 if value > max_value:
@@ -369,9 +391,9 @@ class ConnectFour(NodeMixin):
                 board_string= self.generate_board_string()
 
                 # Create child node
-                child_node = Node(f"(Min)Move: {column}, board: {board_string} ", parent=parent_node)
+                child_node = Node(f"(player min)Move: {column}, board: {board_string} ", parent=parent_node)
 
-                value, _ = self.minimax(depth - 1, alpha, beta, True, child_node)
+                value, _ = self.minimax_with_alphabeta(depth - 1, alpha, beta, True, child_node)
                 self.player2_board = self.undo_drop_piece(self.player2_board, column)
 
                 if value < min_value:
@@ -382,6 +404,50 @@ class ConnectFour(NodeMixin):
                 if beta <= alpha:
                     break
             return min_value, best_move
+
+    def minimax(self, depth, maximizing_player, parent_node=None):
+        if depth == 0 or not self.get_valid_moves():
+            score = self.evaluate_board()
+            # Attach leaf node with score
+            Node(f"score: {score}", parent=parent_node)
+            return score, None
+
+        valid_moves = self.get_valid_moves()
+        best_move = None
+
+        if maximizing_player:
+            max_value = -math.inf
+            for column in valid_moves:
+                self.player1_board = self.drop_piece(self.player1_board, column)
+                board_string = self.generate_board_string()
+                
+                # Create child node
+                child_node = Node(f"(Max) Move: {column}, board: {board_string}", parent=parent_node)
+                
+                value, _ = self.minimax(depth - 1, False, child_node)
+                self.player1_board = self.undo_drop_piece(self.player1_board, column)
+
+                if value > max_value:
+                    max_value = value
+                    best_move = column
+            return max_value, best_move
+        else:
+            min_value = math.inf
+            for column in valid_moves:
+                self.player2_board = self.drop_piece(self.player2_board, column)
+                board_string = self.generate_board_string()
+
+                # Create child node
+                child_node = Node(f"(Min) Move: {column}, board: {board_string}", parent=parent_node)
+
+                value, _ = self.minimax(depth - 1, True, child_node)
+                self.player2_board = self.undo_drop_piece(self.player2_board, column)
+
+                if value < min_value:
+                    min_value = value
+                    best_move = column
+            return min_value, best_move
+
 
 ##-------------------------------------------------------------------gameplay--------------------------------------------------------------##
         
@@ -399,20 +465,31 @@ class ConnectFour(NodeMixin):
         self.player2_board = self.drop_piece(self.player2_board, move)
 
     def computer_turn(self):
+            print("AI is thinking...")
+            self.tree_root = Node("Root")  # Reset the tree for this turn
+            _, move = self.minimax(self.max_depth, True, self.tree_root)
+            self.player1_board = self.drop_piece(self.player1_board, move)
+            self.display_tree()  # Display the tree after the AI move
+            print(f"AI chooses column {move}")
+
+
+    def computer_turn_alphabeta(self):
         print("AI is thinking...")
         self.tree_root = Node("Root")  # Reset the tree for this turn
-        _, move = self.minimax(self.max_depth, float('-inf'), float('inf'), True, self.tree_root)
-        print(f"AI chooses column {move}")
+        _, move = self.minimax_with_alphabeta(self.max_depth, float('-inf'), float('inf'), True, self.tree_root)
         self.player1_board = self.drop_piece(self.player1_board, move)
-        self.display_tree()  # Display the tree after the AI move
+        self.display_tree() # Display the tree after the AI move
+        print(f"AI chooses column {move}")
 
     def play_game(self):
         """Play the game."""
         while True:
             self.print_board_for_player()
+            print(f"ai score is : {self.evaluate_board()}")
 
             if not self.get_valid_moves():
                 print("Game over!")
+                ##utility calculation here
                 break
 
             # Player's turn
@@ -420,11 +497,11 @@ class ConnectFour(NodeMixin):
             
 
             # AI's turn
-            self.computer_turn()
+            self.computer_turn_alphabeta()
             
 
 
 # Run the game
 if __name__ == "__main__":
-    game = ConnectFour(max_depth=2)
+    game = ConnectFour(max_depth=1)
     game.play_game()
