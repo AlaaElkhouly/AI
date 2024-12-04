@@ -65,7 +65,7 @@ class GUI(ConnectFour):
             self.current_player = 1
             self.update_game_state()
 
-    def ai_turn(self):
+    def ai_turn_regular_minimax(self):
         """AI's move."""
         print("AI is thinking...")
         self.tree_root = Node("Root")  # Reset the tree for this turn
@@ -74,7 +74,6 @@ class GUI(ConnectFour):
         self.display_tree() # Display the tree after the AI move
         ai_connect_4,player_connect_4=self.calculate_utility()                      
         print(f"AI chooses column {move}\n ai connected {ai_connect_4}, player connected{player_connect_4}")
-
         self.current_player = 2
         self.update_game_state()
 
@@ -98,7 +97,7 @@ class GUI(ConnectFour):
                     self.handle_click(event.pos)
 
             if self.current_player == 1:
-                self.ai_turn()
+                self.ai_turn_regular_minimax()
 
 # Run the game
 if __name__ == "__main__":
