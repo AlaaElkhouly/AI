@@ -1,7 +1,8 @@
 import math
+from anytree import NodeMixin, RenderTree, Node
 
 class ConnectFour:
-    def __init__(self, max_depth=4):
+    def __init__(self, max_depth):
         self.player1_board = 0b0  # bitboard for player 1
         self.player2_board = 0b0  # bitboard for player 2
         self.height = [0] * 7  # column heights
@@ -10,7 +11,9 @@ class ConnectFour:
         self.max_depth = max_depth
         self.queue = []  # stores nodes for tree visualization
         self.scores = [0, 0]  # scores for player 1 and player 2
-        self.k=4
+        self.k=self.max_depth -1
+        self.old_depth=0
+        self.count=0
         
         
 ##get all valid plays from height of board##-----------------------------------------------------
@@ -21,9 +24,10 @@ class ConnectFour:
 
 
 ##tree operations##---------------------------------------------------------------------------------   
-    def save_and_encode_tree(self):
+    def save_and_encode_tree(self, level):
         connect_four_board = ["."] * 42  # Use a list for the board visualization
         valid_moves = self.get_valid_moves()
+        score=self.evaluate_board()
 
         for column in valid_moves:
             # Get the bitboard for Player 1 and Player 2
@@ -41,9 +45,11 @@ class ConnectFour:
                     connect_four_board[i] = 'O'
                 else:
                     connect_four_board[i] = '.'  # Empty space
+            str_board="".join(connect_four_board)
+            printed=str_board + "         "+ "the depth is " +str(level)+ " levels"+ "the score is "+ str(score)
 
             # Add the visualized board to the queue
-            self.queue.append("".join(connect_four_board))
+            self.queue.append(printed)
             self.undo_drop_piece(copy_board2,column)
             
     def decode_and_print_tree(self):
@@ -103,23 +109,26 @@ class ConnectFour:
 
 ###minimax with alpha beta pruning-------------------------------------------------------------------------
     def minimax(self, depth, alpha, beta, maximizing_player):
+        
         """Minimax with alpha-beta pruning."""
         if depth == 0 or not self.get_valid_moves():
             return self.evaluate_board(), None
         
+        
         if (depth >= self.max_depth - self.k):
-            self.save_and_encode_tree()
+            self.save_and_encode_tree(self.count)
 
 
         valid_moves = self.get_valid_moves()
         best_move = None
 
         if maximizing_player:
+            self.count+=1
             max_value = -math.inf
             for column in valid_moves:
-                self.player1_board = self.drop_piece(self.player1_board, column)
+                self.player2_board = self.drop_piece(self.player2_board, column)
                 value, _ = self.minimax(depth - 1, alpha, beta, False)
-                self.player1_board = self.undo_drop_piece(self.player1_board, column)
+                self.player2_board = self.undo_drop_piece(self.player2_board, column)
 
                 if value > max_value:
                     max_value = value
@@ -132,9 +141,9 @@ class ConnectFour:
         else:
             min_value = math.inf
             for column in valid_moves:
-                self.player2_board = self.drop_piece(self.player2_board, column)
+                self.player1_board = self.drop_piece(self.player1_board, column)
                 value, _ = self.minimax(depth - 1, alpha, beta, True)
-                self.player2_board = self.undo_drop_piece(self.player2_board, column)
+                self.player1_board = self.undo_drop_piece(self.player1_board, column)
 
                 if value < min_value:
                     min_value = value
@@ -155,7 +164,7 @@ class ConnectFour:
 
         # Save the board state if the current depth is within the upper k levels
         if (depth >= self.max_depth - self.k):
-            self.save_and_encode_tree()
+            self.save_and_encode_tree(depth)
 
         valid_moves = self.get_valid_moves()
         best_move = None
@@ -164,7 +173,7 @@ class ConnectFour:
             max_value = -math.inf
             for column in valid_moves:
                 self.player1_board = self.drop_piece(self.player1_board, column)
-                value, _ = self.minimax(depth - 1, False)  # No alpha-beta parameters
+                value, _ = self.minimax_without_alpha_beta(depth - 1, False)  # No alpha-beta parameters
                 self.player1_board = self.undo_drop_piece(self.player1_board, column)
 
                 if value > max_value:
@@ -176,7 +185,7 @@ class ConnectFour:
             min_value = math.inf
             for column in valid_moves:
                 self.player2_board = self.drop_piece(self.player2_board, column)
-                value, _ = self.minimax(depth - 1, True)  # No alpha-beta parameters
+                value, _ = self.minimax_without_alpha_beta(depth - 1, True)  # No alpha-beta parameters
                 self.player2_board = self.undo_drop_piece(self.player2_board, column)
 
                 if value < min_value:
@@ -228,7 +237,15 @@ class ConnectFour:
         print("AI is thinking...")
         _, move = self.minimax(self.max_depth, float('-inf'), float('inf'), True)
         print(f"AI chooses column {move}")
-        self.player2_board = self.drop_piece(self.player2_board, move)
+        self.player1_board = self.drop_piece(self.player1_board, move)
+
+    def computer_turn_without(self):
+        """Handle AI's move using Minimax."""
+        print("AI is thinking...")
+        _, move = self.minimax_without_alpha_beta(self.max_depth, True)
+        print(f"AI chooses column {move}")
+        self.player1_board = self.drop_piece(self.player1_board, move)
+
 
     def post_scores(self):
         """Display the scores."""
@@ -255,6 +272,29 @@ class ConnectFour:
             self.computer_turn()
             self.post_scores()
             self.decode_and_print_tree()
+    
+    def play_game_without(self):
+        count=0
+        """Play the game."""
+        while True:
+            self.print_board()
+
+            if not self.get_valid_moves():
+                print("game over")
+                break
+
+            # Player's turn
+            self.player_turn()
+            self.post_scores()
+            self.clear_queue()
+        
+        
+
+            # AI's turn
+            self.computer_turn_without()
+            self.post_scores()
+            self.decode_and_print_tree()
+        
            
             
 
