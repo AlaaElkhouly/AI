@@ -13,6 +13,7 @@ class ConnectFour:
         self.queue = []  # stores nodes for tree visualization
         self.scores = [0, 0]  # scores for player 1 and player 2
         self.k = 4
+        self.e_col=0
 
     # Get all valid moves
     def get_valid_moves(self):
@@ -27,8 +28,10 @@ class ConnectFour:
         for column in valid_moves:
             copy_board1 = self.player1_board
             copy_board2 = self.player2_board
-
-            temp_board2 = self.drop_piece(copy_board2, column)
+            if x==3:
+                temp_board2 = self.drop_piece_expectiminimax(copy_board2, column)
+            else:    
+                temp_board2 = self.drop_piece(copy_board2, column)
 
             for i in range(42):
                 if copy_board1 & (1 << i):
@@ -39,7 +42,10 @@ class ConnectFour:
                     connect_four_board[i] = '.'
 
             self.queue.append("".join(connect_four_board))
-            self.undo_drop_piece(copy_board2, column)
+            if x==3:
+                self.undo_drop_piece_expectiminimax(copy_board2, e_col)
+            else:
+                self.undo_drop_piece(copy_board2, column)
 
     def decode_and_print_tree(self):
         """Decode and display all boards stored in the queue."""
@@ -52,9 +58,8 @@ class ConnectFour:
         self.queue.clear()
 
     # Drop and undo piece
-    def drop_piece(self, player_bitboard, column):
+    def drop_piece(self, player_bitboard, column):   
         """Simulate dropping a piece in the given column."""
-        col_dash=self.get_probabilities(column)
         if self.height[column] >= self.num_rows:
             raise ValueError("Column is full!")
         mask = 1 << (column * self.num_rows + self.height[column])
@@ -135,6 +140,35 @@ class ConnectFour:
             return {6: 0.6, 5: 0.4}
         else:
             return {column - 1: 0.2, column: 0.6, column + 1: 0.2}
+    #_____________________________________
+        
+
+    #_____________________________________
+    # Drop and undo piece
+    def drop_piece_expectiminimax(self, player_bitboard, column):   
+        """Simulate dropping a piece in the given column."""
+        rand = random.random()
+        probabilities=self.get_probabilities(column)
+        cumulative_probability = 0
+        for key, probability in probabilities.items():
+            cumulative_probability += probability
+            if rand < cumulative_probability:
+                self.e_col = key
+                break
+
+        if self.height[self.e_col] >= self.num_rows:
+            raise ValueError("Column is full!")
+        mask = 1 << (self.e_col * self.num_rows + self.height[self.e_col])
+        player_bitboard |= mask
+        self.height[self.e_col] += 1
+        return player_bitboard
+
+    def undo_drop_piece_expectiminimax(self, player_bitboard, e_col):
+        """Undo the last piece drop."""
+        self.height[self.e_col] -= 1
+        mask = 1 << (self.e_col * self.num_rows + self.height[self.e_col])
+        player_bitboard &= ~mask
+        return player_bitboard
 
     # Expected minimax
     import random
@@ -154,7 +188,7 @@ class ConnectFour:
 
                 # Get possible outcome columns and their probabilities
                 probabilities = self.get_probabilities(column)
-            
+
                 # Choose one of the columns based on the probability distribution
                 outcome_col = random.choices(list(probabilities.keys()), list(probabilities.values()))[0]
                 # Ensure the chosen column isn't full
