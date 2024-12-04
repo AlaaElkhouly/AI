@@ -1,95 +1,365 @@
 import math
-import random
-x=int(input("What Mode?\n1.MiniMax with Prunning\n2.MiniMax without Pruning\n3.Expected MiniMax"))
-depth=int(input("Depth?"))
-class ConnectFour:
+from anytree import NodeMixin, RenderTree, Node
+import numpy as np
+
+
+class ConnectFour(NodeMixin):
     def __init__(self, max_depth=4):
-        self.player1_board = 0b0  # bitboard for player 1
-        self.player2_board = 0b0  # bitboard for player 2
-        self.height = [0] * 7  # column heights
+        self.player1_board = 0b0  # Bitboard for player 1 player is ai
+        self.player2_board = 0b0  # Bitboard for player 2
+        self.column_heights = [0] * 7  # Column heights
         self.num_rows = 6
         self.num_cols = 7
         self.max_depth = max_depth
-        self.queue = []  # stores nodes for tree visualization
-        self.scores = [0, 0]  # scores for player 1 and player 2
-        self.k = 4
+        self.scores = [0, 0]  # Scores for player 1 and player 2
+        self.k = 1  # Max depth for the tree search
+        self.tree_root = Node("Root")
+        self.PLAYER_PIECE = 1
+        self.AI_PIECE = 2 
+        self.COLS = self.num_cols
+        self.ROWS = self.num_rows
+        self.EMPTY = 0
 
-    # Get all valid moves
+##------------------------------------------    Board Operations------------------------------------------------##
     def get_valid_moves(self):
-        """Return list of valid columns."""
-        return [col for col in range(self.num_cols) if self.height[col] < self.num_rows]
+        """Return list of valid columns (where a piece can be dropped)."""
+        return [col for col in range(self.num_cols) if self.column_heights[col] < self.num_rows]
 
-    # Tree operations
-    def save_and_encode_tree(self):
-        connect_four_board = ["."] * 42  # Use a list for the board visualization
-        valid_moves = self.get_valid_moves()
-
-        for column in valid_moves:
-            copy_board1 = self.player1_board
-            copy_board2 = self.player2_board
-
-            temp_board2 = self.drop_piece(copy_board2, column)
-
-            for i in range(42):
-                if copy_board1 & (1 << i):
-                    connect_four_board[i] = 'X'
-                elif temp_board2 & (1 << i):
-                    connect_four_board[i] = 'O'
-                else:
-                    connect_four_board[i] = '.'
-
-            self.queue.append("".join(connect_four_board))
-            self.undo_drop_piece(copy_board2, column)
-
-    def decode_and_print_tree(self):
-        """Decode and display all boards stored in the queue."""
-        for node_index, c4_board in enumerate(self.queue):
-            print(f"Node {node_index}:")
-            print(c4_board)
-            print()
-
-    def clear_queue(self):
-        self.queue.clear()
-
-    # Drop and undo piece
     def drop_piece(self, player_bitboard, column):
         """Simulate dropping a piece in the given column."""
-        if self.height[column] >= self.num_rows:
+        if self.column_heights[column] >= self.num_rows:
             raise ValueError("Column is full!")
-        mask = 1 << (column * self.num_rows + self.height[column])
+        mask = 1 << (column * self.num_rows + self.column_heights[column])
         player_bitboard |= mask
-        self.height[column] += 1
+        self.column_heights[column] += 1
         return player_bitboard
 
     def undo_drop_piece(self, player_bitboard, column):
         """Undo the last piece drop."""
-        self.height[column] -= 1
-        mask = 1 << (column * self.num_rows + self.height[column])
+        self.column_heights[column] -= 1
+        mask = 1 << (column * self.num_rows + self.column_heights[column])
         player_bitboard &= ~mask
         return player_bitboard
+    
 
-    # Heuristic evaluation function
+##---------------------------------------------heuristics---------------------------------------------------------##
+
+    def check_win(self, board, piece):
+            
+            ROWS = self.num_rows
+            COLS = self.num_cols
+            # Horizontal
+            for row in range(ROWS):
+                for col in range(COLS - 3):
+                    if all(board[row][col + i] == piece for i in range(4)):
+                        return True
+            # Vertical
+            for row in range(ROWS - 3):
+                for col in range(COLS):
+                    if all(board[row + i][col] == piece for i in range(4)):
+                        return True
+            # Diagonal (sloping downward from left to right)
+            for row in range(ROWS - 3):
+                for col in range(COLS - 3):
+                    if all(board[row + i][col + i] == piece for i in range(4)):
+                        return True
+            # Diagonal (sloping downward from right to left)
+            for row in range(3, ROWS):
+                for col in range(COLS - 3):
+                    if all(board[row - i][col + i] == piece for i in range(4)):
+                        return True
+
+            return False
+
+    def bitboard_to_array(self):
+        board = [[0 for _ in range(self.num_cols)] for _ in range(self.num_rows)]
+        for col in range(self.num_cols):
+            for row in range(self.column_heights[col]):
+                if (self.player1_board >> (col * self.num_rows + row)) & 1:
+                    board[row][col] = 1
+                elif (self.player2_board >> (col * self.num_rows + row)) & 1:
+                    board[row][col] = 2
+        #print(board)
+        return board
+
+    def heuristic(self, bitboard, piece):
+        ROWS = self.num_rows
+        COLS = self.num_cols
+        board=self.bitboard_to_array()
+        #print(board)
+        score = 0
+        opp_piece = self.PLAYER_PIECE if piece == self.AI_PIECE else self.AI_PIECE
+
+        # Feature 1: Absolute win
+        if self.check_win(board, piece):
+            return float('inf')  # AI wins
+        if self.check_win(board, opp_piece):
+            return float('-inf')  # Opponent wins
+
+        # Horizontal scoring
+        for row in range(ROWS):
+            for col in range(COLS - 3):
+                window = board[row][col:col + 4]
+                score += self.evaluate_window_heuristic1(window, board, piece, row, col, direction='horizontal')
+
+        # Vertical scoring
+        for row in range(ROWS - 3):
+            for col in range(COLS):
+                window = [board[row + i][col] for i in range(4)]
+                score += self.evaluate_window_heuristic1(window, board, piece, row, col, direction='vertical')
+
+        # Positive diagonal scoring
+        for row in range(ROWS - 3):
+            for col in range(COLS - 3):
+                window = [board[row + i][col + i] for i in range(4)]
+                score += self.evaluate_window_heuristic1(window, board, piece, row, col, direction='positive_diagonal')
+
+        # Negative diagonal scoring
+        for row in range(3, ROWS):
+            for col in range(COLS - 3):
+                window = [board[row - i][col + i] for i in range(4)]
+                score += self.evaluate_window_heuristic1(window, board, piece, row, col, direction='negative_diagonal')
+
+        # Feature 4: Single chessmen position evaluation
+        score += self.single_piece_heuristic(board, piece)
+        #print(score)
+
+        return score
+
+    def evaluate_window_heuristic1(self, window, board, piece, row, col, direction):
+        # Evaluate a window of 4 cells for Heuristic-1 features.
+        score = 0
+        opp_piece = self.PLAYER_PIECE if piece == self.AI_PIECE else self.AI_PIECE
+
+        count_piece = np.count_nonzero(np.array(window) == piece)
+        count_empty = np.count_nonzero(np.array(window) == self.EMPTY)
+        count_opp_piece = np.count_nonzero(np.array(window) == opp_piece)
+
+        # Feature 1: Absolute win
+        if count_piece == 4:
+            return float('inf')  # Absolute win
+
+        # Feature 2: Three connected (3 situation)
+        if count_piece == 3 and count_empty == 1:
+            adjacent_availability = self.check_adjacent_availability(board, row, col, direction, piece)
+            if adjacent_availability == "both":
+                return float('inf')  # Unstoppable win
+            elif adjacent_availability == "one":
+                score += 900000  # Likely win
+            else:
+                score += 0  # No promising future
+
+        # Feature 3: Two connected (3 situations)
+        if count_piece == 2 and count_empty == 2:
+            available_squares = self.count_available_squares(board, row, col, direction)
+            if available_squares >= 5:
+                score += 40000  # Left Situation (most promising future)
+            elif available_squares == 4:
+                score += 30000  # Middle Situation (moderate future)
+            elif available_squares == 3:
+                score += 20000  # Right Situation (less promising)
+            elif available_squares == 2:
+                score += 10000  # Least favorable but still valid
+
+        # Block opponent's three connected
+        if count_opp_piece == 3 and count_empty == 1:
+            score -= 900000
+
+        # Ensure a score is always returned
+        return score
+
+    def check_adjacent_availability(self, board, row, col, direction, piece):
+        # Check the availability of adjacent spaces for a horizontal 3-connected pattern.
+        ROWS = self.num_rows
+        COLS = self.num_cols
+        if direction != 'horizontal':
+            return None  # Adjacent availability checks only apply to horizontal connections
+
+        left_empty = col > 0 and board[row][col - 1] == self.EMPTY
+        right_empty = col + 3 < COLS - 1 and board[row][col + 4] == self.EMPTY
+
+        if left_empty and right_empty:
+            return "both"
+        elif left_empty or right_empty:
+            return "one"
+        else:
+            return "none"
+
+    def count_available_squares(self, board, row, col, direction):
+        # Count the number of available squares adjacent to two connected chessmen.
+        ROWS = self.num_rows
+        COLS = self.num_cols
+        available = 0
+
+        if direction == 'horizontal':
+            # Check left and right along the row
+            for c in range(col - 1, -1, -1):
+                if board[row][c] == self.EMPTY:
+                    available += 1
+                else:
+                    break
+            for c in range(col + 4, COLS):
+                if board[row][c] == self.EMPTY:
+                    available += 1
+                else:
+                    break
+
+        elif direction == 'vertical':
+            # Check downward along the column
+            for r in range(row + 2, ROWS):
+                if board[r][col] == self.EMPTY:
+                    available += 1
+                else:
+                    break
+
+        elif direction == 'positive_diagonal':
+            # Check positive diagonal (\ direction)
+            # Check bottom-left
+            r, c = row + 2, col - 2
+            while r < ROWS and c >= 0:
+                if board[r][c] == self.EMPTY:
+                    available += 1
+                else:
+                    break
+                r += 1
+                c -= 1
+            # Check top-right
+            r, c = row - 2, col + 2
+            while r >= 0 and c < COLS:
+                if board[r][c] == self.EMPTY:
+                    available += 1
+                else:
+                    break
+                r -= 1
+                c += 1
+
+        elif direction == 'negative_diagonal':
+            # Check negative diagonal (/ direction)
+            # Check bottom-right
+            r, c = row + 2, col + 2
+            while r < ROWS and c < COLS:
+                if board[r][c] == self.EMPTY:
+                    available += 1
+                else:
+                    break
+                r += 1
+                c += 1
+            # Check top-left
+            r, c = row - 2, col - 2
+            while r >= 0 and c >= 0:
+                if board[r][c] == self.EMPTY:
+                    available += 1
+                else:
+                    break
+                r -= 1
+                c -= 1
+
+        return available
+
+
+    def single_piece_heuristic(self, board, piece):
+        # Evaluate single chessmen based on their position on the board.
+        ROWS = self.num_rows
+        COLS = self.num_cols
+        position_values = [40, 70, 120, 200, 120, 70, 40]  # Column-wise values for single pieces
+        score = 0
+        for row in range(ROWS):
+            for col in range(COLS):
+                if board[row][col] == piece:
+                    score += position_values[col]
+                #elif board[row][col] == (self.PLAYER_PIECE if piece == self.AI_PIECE else self.AI_PIECE):
+                 #    score -= position_values[col]
+              
+        return score
+
     def evaluate_board(self):
-        """Evaluate the board state to calculate scores."""
-        directions = [1, 7, 8, 6]
-        player1_score = 0
-        player2_score = 0
+       # player_score = self.heuristic(self.player1_board, self.PLAYER_PIECE)
+        ai_score = self.heuristic(self.player1_board, self.AI_PIECE)
+        player_score=self.heuristic(self.player2_board, self.PLAYER_PIECE)
+        self.scores = [ai_score,player_score]
+        #print(f"Debug: Player score = {player_score}, AI score = {ai_score}")
+        return ai_score
 
-        for direction in directions:
-            for shift in range(1, 4):
-                player1_temp = self.player1_board & (self.player1_board >> direction)
-                player2_temp = self.player2_board & (self.player2_board >> direction)
-                player1_score += bin(player1_temp & (player1_temp >> (shift * direction))).count('1') * shift
-                player2_score += bin(player2_temp & (player2_temp >> (shift * direction))).count('1') * shift
 
-        self.scores = [player1_score, player2_score]
-        return player1_score - player2_score
+##----------------------------------------------calculate utility--------------------------------------------##
+    def count_sequences(self, player, length,board):
+            """Count sequences of 'length' for a given player."""
+            count = 0
+            for row in range(self.num_rows):
+                for col in range(self.num_cols - length + 1):
+                    if all(board[row][col + i] == player for i in range(length)):
+                        count += 1
 
-    # Minimax with alpha-beta pruning
-    def minimax(self, depth, alpha, beta, maximizing_player):
-        """Minimax with alpha-beta pruning."""
+            for row in range(self.num_rows - length + 1):
+                for col in range(self.num_cols):
+                    if all(board[row + i][col] == player for i in range(length)):
+                        count += 1
+
+            for row in range(self.num_rows - length + 1):
+                for col in range(self.num_cols - length + 1):
+                    if all(board[row + i][col + i] == player for i in range(length)):
+                        count += 1
+
+            for row in range(length - 1, self.num_rows):
+                for col in range(self.num_cols - length + 1):
+                    if all(board[row - i][col + i] == player for i in range(length)):
+                        count += 1
+            return count
+
+
+
+
+
+##-----------------------------------------------tree printing-----------------------------------------------##
+    def generate_board_string(self):
+            connect_four_board = ["."] * 42  # Use a list for the board visualization
+            score=self.evaluate_board()
+
+            # Visualize the bitboard state
+            for i in range(42):
+                if self.player1_board & (1 << i):  # Check if the i-th bit is set for Player 1
+                    connect_four_board[i] = 'X'
+                elif self.player2_board & (1 << i):  # Check if the i-th bit is set for Player 2
+                    connect_four_board[i] = 'O'
+                else:
+                    connect_four_board[i] = '.'  # Empty space
+            str_board="".join(connect_four_board)
+            printed=str_board 
+            return(printed)
+
+    def print_tree(self):
+            """Print the tree using anytree's RenderTree."""
+            if not self.root_node:
+                print("Tree has not been created yet.")
+                return
+            for pre, _, node in RenderTree(self.root_node):
+                print(f"{pre}{node.name}: Depth {node.depth}")
+                print(node.board)
+                print()
+
+    def display_tree(self):
+        for pre, fill, node in RenderTree(self.tree_root):
+            print(f"{pre}{node.name}")
+
+    def print_board_for_player(self):
+        """Visualize the current board."""
+        board = [[' ' for _ in range(self.num_cols)] for _ in range(self.num_rows)]
+        for col in range(self.num_cols):
+            for row in range(self.column_heights[col]):
+                if (self.player1_board >> (col * self.num_rows + row)) & 1:
+                    board[row][col] = 'X'
+                elif (self.player2_board >> (col * self.num_rows + row)) & 1:
+                    board[row][col] = 'O'
+        for row in reversed(board):
+            print('|' + '|'.join(row) + '|')
+
+##-----------------------------------------------------------minimax-------------------------------------------------------------------------------------###
+    def minimax_with_alphabeta(self, depth, alpha, beta, maximizing_player, parent_node=None):
         if depth == 0 or not self.get_valid_moves():
-            return self.evaluate_board(), None
+            score = self.evaluate_board()
+            # Attach leaf node with score
+            Node(f"score: {score}", parent=parent_node)
+            return score, None
 
         valid_moves = self.get_valid_moves()
         best_move = None
@@ -98,7 +368,12 @@ class ConnectFour:
             max_value = -math.inf
             for column in valid_moves:
                 self.player1_board = self.drop_piece(self.player1_board, column)
-                value, _ = self.minimax(depth - 1, alpha, beta, False)
+                board_string= self.generate_board_string()
+                
+                # Create child node
+                child_node = Node(f"(ai max) Move to column: {column} ,board: {board_string} ", parent=parent_node)
+                
+                value, _ = self.minimax_with_alphabeta(depth - 1, alpha, beta, False, child_node)
                 self.player1_board = self.undo_drop_piece(self.player1_board, column)
 
                 if value > max_value:
@@ -113,7 +388,12 @@ class ConnectFour:
             min_value = math.inf
             for column in valid_moves:
                 self.player2_board = self.drop_piece(self.player2_board, column)
-                value, _ = self.minimax(depth - 1, alpha, beta, True)
+                board_string= self.generate_board_string()
+
+                # Create child node
+                child_node = Node(f"(player min)Move: {column}, board: {board_string} ", parent=parent_node)
+
+                value, _ = self.minimax_with_alphabeta(depth - 1, alpha, beta, True, child_node)
                 self.player2_board = self.undo_drop_piece(self.player2_board, column)
 
                 if value < min_value:
@@ -125,23 +405,12 @@ class ConnectFour:
                     break
             return min_value, best_move
 
-    # Probabilities for expected minimax
-    def get_probabilities(self, column):
-        """Return a dictionary of potential column outcomes and their probabilities."""
-        if column == 0:
-            return {0: 0.6, 1: 0.4}
-        elif column == 6:
-            return {6: 0.6, 5: 0.4}
-        else:
-            return {column - 1: 0.2, column: 0.6, column + 1: 0.2}
-
-    # Expected minimax
-    import random
-
-    def expectiminimax(self, depth, maximizing_player):
-        """Expected minimax to handle probabilistic moves and misplacement."""
+    def minimax(self, depth, maximizing_player, parent_node=None):
         if depth == 0 or not self.get_valid_moves():
-            return self.evaluate_board(), None
+            score = self.evaluate_board()
+            # Attach leaf node with score
+            Node(f"score: {score}", parent=parent_node)
+            return score, None
 
         valid_moves = self.get_valid_moves()
         best_move = None
@@ -149,72 +418,39 @@ class ConnectFour:
         if maximizing_player:
             max_value = -math.inf
             for column in valid_moves:
-                expected_value = 0
+                self.player1_board = self.drop_piece(self.player1_board, column)
+                board_string = self.generate_board_string()
+                
+                # Create child node
+                child_node = Node(f"(Max) Move: {column}, board: {board_string}", parent=parent_node)
+                
+                value, _ = self.minimax(depth - 1, False, child_node)
+                self.player1_board = self.undo_drop_piece(self.player1_board, column)
 
-                # Get possible outcome columns and their probabilities
-                probabilities = self.get_probabilities(column)
-
-                # Choose one of the columns based on the probability distribution
-                outcome_col = random.choices(list(probabilities.keys()), list(probabilities.values()))[0]
-                # Ensure the chosen column isn't full
-                if self.height[outcome_col] >= self.num_rows:  # Skip full columns
-                    continue
-
-                # Drop the piece in the chosen column based on misplacement probability
-                self.player1_board = self.drop_piece(self.player1_board, outcome_col)
-                value, _ = self.expectiminimax(depth - 1, False)
-                self.player1_board = self.undo_drop_piece(self.player1_board, outcome_col)
-                expected_value += probabilities[outcome_col] * value
-
-                if expected_value > max_value:
-                    max_value = expected_value
+                if value > max_value:
+                    max_value = value
                     best_move = column
-
             return max_value, best_move
         else:
             min_value = math.inf
             for column in valid_moves:
-                expected_value = 0
+                self.player2_board = self.drop_piece(self.player2_board, column)
+                board_string = self.generate_board_string()
 
-                # Get possible outcome columns and their probabilities
-                probabilities = self.get_probabilities(column)
+                # Create child node
+                child_node = Node(f"(Min) Move: {column}, board: {board_string}", parent=parent_node)
 
-                # Choose one of the columns based on the probability distribution
-                outcome_col = random.choices(list(probabilities.keys()), list(probabilities.values()))[0]
+                value, _ = self.minimax(depth - 1, True, child_node)
+                self.player2_board = self.undo_drop_piece(self.player2_board, column)
 
-                # Ensure the chosen column isn't full
-                if self.height[outcome_col] >= self.num_rows:  # Skip full columns
-                    continue
-
-                # Drop the piece in the chosen column based on misplacement probability
-                self.player2_board = self.drop_piece(self.player2_board, outcome_col)
-                value, _ = self.expectiminimax(depth - 1, True)
-                self.player2_board = self.undo_drop_piece(self.player2_board, outcome_col)
-                expected_value += probabilities[outcome_col] * value
-
-                if expected_value < min_value:
-                    min_value = expected_value
+                if value < min_value:
+                    min_value = value
                     best_move = column
-
             return min_value, best_move
 
 
-
-    # Print board
-    def print_board(self):
-        """Visualize the current board."""
-        print(" 0 1 2 3 4 5 6")  # Column numbers
-        board = [[' ' for _ in range(self.num_cols)] for _ in range(self.num_rows)]
-        for col in range(self.num_cols):
-            for row in range(self.height[col]):
-                if (self.player1_board >> (col * self.num_rows + row)) & 1:
-                    board[row][col] = 'X'
-                elif (self.player2_board >> (col * self.num_rows + row)) & 1:
-                    board[row][col] = 'O'
-        for row in reversed(board):
-            print('|' + '|'.join(row) + '|')
-
-    # Player and AI turns
+##-------------------------------------------------------------------gameplay--------------------------------------------------------------##
+        
     def player_turn(self):
         """Handle player's move."""
         while True:
@@ -226,35 +462,46 @@ class ConnectFour:
                     break
             except ValueError:
                 print("Please enter a number between 0 and 6.")
-        self.player1_board = self.drop_piece(self.player1_board, move)
+        self.player2_board = self.drop_piece(self.player2_board, move)
 
     def computer_turn(self):
-        """Handle AI's move using Expected Minimax."""
-        print("AI is thinking...")
-        if x==1:
-            _, move = self.minimax(depth, -math.inf, math.inf, True)
-        elif x==2:
-            _, move = self.minimax(depth, True)#without alpha-beta!!!!!!!!!!!!!!!!!!!!!! 
-        else:
-            _, move = self.expectiminimax(depth, True)
-        if move is not None:
+            print("AI is thinking...")
+            self.tree_root = Node("Root")  # Reset the tree for this turn
+            _, move = self.minimax(self.max_depth, True, self.tree_root)
+            self.player1_board = self.drop_piece(self.player1_board, move)
+            self.display_tree()  # Display the tree after the AI move
             print(f"AI chooses column {move}")
-            self.player2_board = self.drop_piece(self.player2_board, move)
-        else:
-            print("AI could not find a valid move.")
 
-    # Play game
+
+    def computer_turn_alphabeta(self):
+        print("AI is thinking...")
+        self.tree_root = Node("Root")  # Reset the tree for this turn
+        _, move = self.minimax_with_alphabeta(self.max_depth, float('-inf'), float('inf'), True, self.tree_root)
+        self.player1_board = self.drop_piece(self.player1_board, move)
+        self.display_tree() # Display the tree after the AI move
+        print(f"AI chooses column {move}")
+
     def play_game(self):
         """Play the game."""
         while True:
-            self.print_board()
+            self.print_board_for_player()
+            print(f"ai score is : {self.evaluate_board()}")
+
             if not self.get_valid_moves():
                 print("Game over!")
+                ##utility calculation here
                 break
+
+            # Player's turn
             self.player_turn()
-            self.computer_turn()
+            
+
+            # AI's turn
+            self.computer_turn_alphabeta()
+            
+
 
 # Run the game
 if __name__ == "__main__":
-    game = ConnectFour(max_depth=4)
+    game = ConnectFour(max_depth=1)
     game.play_game()
