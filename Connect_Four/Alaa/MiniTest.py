@@ -41,11 +41,12 @@ from anytree import Node
         self.display_tree() # Display the tree after the AI move
         print(f"AI chooses column {move}")
 
-    def expectiminimax(self, depth, maximizing_player, parent_node=None):
+    def expectiminimax(self, depth, maximizing_player, parent_node=None, current_level=1):
         """Expected minimax to handle probabilistic moves and misplacement."""
         if depth == 0 or not self.get_valid_moves():
             score = self.evaluate_board()
-            Node(f"score: {score}", parent=parent_node)
+            if self.k is None or current_level <= self.k:
+                Node(f"score: {score}", parent=parent_node)
             return score, None
 
         valid_moves = self.get_valid_moves()
@@ -68,10 +69,14 @@ from anytree import Node
                 # Drop the piece in the chosen column based on misplacement probability
                 self.player1_board = self.drop_piece(self.player1_board, outcome_col)
 
-                # Create child node
-                child_node = Node(f"(ai max) Move to column: {column} ,board: {board_string} ", parent=parent_node)
+                board_string = self.generate_board_string()
 
-                value, _ = self.expectiminimax(depth - 1, False)
+                # Create a child node only if within the first k levels
+                child_node = None
+                if self.k is None or current_level < self.k:
+                    child_node = Node(f"(Max) Move: {column}, board: {board_string}", parent=parent_node)
+
+                value, _ = self.expectiminimax(depth - 1, False ,child_node, current_level + 1)
                 self.player1_board = self.undo_drop_piece(self.player1_board, outcome_col)
                 expected_value += probabilities[outcome_col] * value
 
@@ -99,10 +104,12 @@ from anytree import Node
                 self.player2_board = self.drop_piece(self.player2_board, outcome_col)
                 board_string= self.generate_board_string()
 
-                # Create child node
-                child_node = Node(f"(player min)Move: {column}, board: {board_string} ", parent=parent_node)
+                # Create a child node only if within the first k levels
+                child_node = None
+                if self.k is None or current_level < self.k:
+                    child_node = Node(f"(Min) Move: {column}, board: {board_string}", parent=parent_node)
 
-                value, _ = self.expectiminimax(depth - 1, True, child_node)
+                value, _ = self.expectiminimax(depth - 1, True, child_node, current_level + 1)
                 self.player2_board = self.undo_drop_piece(self.player2_board, outcome_col)
                 expected_value += probabilities[outcome_col] * value
 
