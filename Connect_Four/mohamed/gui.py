@@ -1,4 +1,4 @@
-from rebuild import ConnectFour
+from rebuild import *
 import pygame
 import sys
 
@@ -68,23 +68,20 @@ class GUI(ConnectFour):
     def ai_turn(self):
         """AI's move."""
         print("AI is thinking...")
-        _, move = self.minimax_with_alphabeta(self.max_depth, float('-inf'), float('inf'), True)
+        self.tree_root = Node("Root")  # Reset the tree for this turn
+        _, move = self.minimax(self.max_depth, True, self.tree_root)
         self.player1_board = self.drop_piece(self.player1_board, move)
+        self.display_tree() # Display the tree after the AI move
+        ai_connect_4,player_connect_4=self.calculate_utility()                      
+        print(f"AI chooses column {move}\n ai connected {ai_connect_4}, player connected{player_connect_4}")
+
         self.current_player = 2
         self.update_game_state()
 
     def update_game_state(self):
         """Update the game state and check for a winner."""
         self.board = self.get_corrected_board()  # Update the board using the overridden method
-        if self.check_win(self.board, 1):
-            print("AI wins!")
-            self.running = False
-        elif self.check_win(self.board, 2):
-            print("You win!")
-            self.running = False
-        elif not self.get_valid_moves():
-            print("It's a draw!")
-            self.running = False
+
 
     def game_loop(self):
         """Main game loop."""
