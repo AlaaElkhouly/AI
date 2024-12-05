@@ -496,15 +496,27 @@ class ConnectFour(NodeMixin):
         else:
             return {column - 1: 0.2, column: 0.6, column + 1: 0.2}
         
-    def expecticol(self, column):
-        probabilities=self.get_probabilities(column)
+    def expecticol(self,column):
         rand = random.random()
-        cumulative_probability = 0
-        for key, probability in probabilities.items():
-            cumulative_probability += probability
-            if rand < cumulative_probability:
-                ecol = key
+        if column==0:
+            if rand<= 0.4:
+                ecol=1
+            else:
+                ecol=0 
+        elif column==6:
+            if rand<= 0.4:
+                ecol=5
+            else:
+                ecol=6
+        else:
+            if rand<=0.2:
+                ecol=column-1
+            elif rand<=0.8:
+                 ecol=column
+            else:
+                 ecol=column+1     
         return ecol
+
 
     def player_turn_expecti(self):
             """Handle player's move."""
