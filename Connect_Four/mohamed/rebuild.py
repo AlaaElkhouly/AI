@@ -4,7 +4,7 @@ import numpy as np
 import random
 
 class ConnectFour(NodeMixin):
-    def __init__(self, max_depth=2):
+    def __init__(self, max_depth=3):
         self.player1_board = 0b0  # Bitboard for player 1 player is ai
         self.player2_board = 0b0  # Bitboard for player 2
         self.column_heights = [0] * 7  # Column heights
@@ -12,7 +12,7 @@ class ConnectFour(NodeMixin):
         self.num_cols = 7
         self.max_depth = max_depth
         self.scores = [0, 0]  # Scores for player 1 and player 2
-        self.k = 2 # Max depth for the tree search
+        self.k = 3 # Max depth for the tree search
         self.tree_root = Node("Root")
         self.PLAYER_PIECE = 1
         self.AI_PIECE = 2 
@@ -381,7 +381,9 @@ class ConnectFour(NodeMixin):
                 # Create a child node only if within the first k levels
                 child_node = None
                 if self.k is None or current_level < self.k:
-                    child_node = Node(f"(Max) Move: {column}, board: {board_string}", parent=parent_node)
+                    current_score=self.evaluate_board()
+                    child_node = Node(f"(Max) Move: {column}, board: {board_string}, immediate score is {current_score}", parent=parent_node)
+
 
                 # Recursive call with updated alpha and current level
                 value, _ = self.minimax_with_alphabeta(
@@ -408,7 +410,9 @@ class ConnectFour(NodeMixin):
                 # Create a child node only if within the first k levels
                 child_node = None
                 if self.k is None or current_level < self.k:
-                    child_node = Node(f"(Min) Move: {column}, board: {board_string}", parent=parent_node)
+                    current_score=self.evaluate_board()
+                    child_node = Node(f"(Max) Move: {column}, board: {board_string}, immediate score is {current_score}", parent=parent_node)
+
 
                 # Recursive call with updated beta and current level
                 value, _ = self.minimax_with_alphabeta(
@@ -448,7 +452,8 @@ class ConnectFour(NodeMixin):
                 # Create a child node only if within the first k levels
                 child_node = None
                 if self.k is None or current_level < self.k:
-                    child_node = Node(f"(Max) Move: {column}, board: {board_string}", parent=parent_node)
+                    current_score=self.evaluate_board()
+                    child_node = Node(f"(Max) Move: {column}, board: {board_string}, immediate score is {current_score}", parent=parent_node)
 
 
                 # Recursive call with incremented current level
@@ -472,7 +477,10 @@ class ConnectFour(NodeMixin):
                 # Create a child node only if within the first k levels
                 child_node = None
                 if self.k is None or current_level < self.k:
-                    child_node = Node(f"(Min) Move: {column}, board: {board_string}", parent=parent_node)
+                    current_score=self.evaluate_board()
+                    child_node = Node(f"(Max) Move: {column}, board: {board_string}, immediate score is {current_score}", parent=parent_node)
+
+
 
                 # Recursive call with incremented current level
                 value, _ = self.minimax(depth - 1, True, child_node, current_level + 1)
@@ -571,7 +579,10 @@ class ConnectFour(NodeMixin):
                 # Create a child node only if within the first k levels
                 child_node = None
                 if self.k is None or current_level < self.k:
-                    child_node = Node(f"(Max) Move: {column}, board: {board_string}", parent=parent_node)
+                    current_score=self.evaluate_board()
+                    child_node = Node(f"(Max) Move: {column}, board: {board_string}, immediate score is {current_score}", parent=parent_node)
+
+
 
                 value, _ = self.expectiminimax(depth - 1, False ,child_node, current_level + 1)
                 self.player1_board = self.undo_drop_piece(self.player1_board, outcome_col)
@@ -601,7 +612,9 @@ class ConnectFour(NodeMixin):
                 # Create a child node only if within the first k levels
                 child_node = None
                 if self.k is None or current_level < self.k:
-                    child_node = Node(f"(Min) Move: {column}, board: {board_string}", parent=parent_node)
+                    current_score=self.evaluate_board()
+                    child_node = Node(f"(Max) Move: {column}, board: {board_string}, immediate score is {current_score}", parent=parent_node)
+
 
                 value, _ = self.expectiminimax(depth - 1, True, child_node, current_level + 1)
                 self.player2_board = self.undo_drop_piece(self.player2_board, outcome_col)
@@ -692,4 +705,4 @@ class ConnectFour(NodeMixin):
 # Run the game
 if __name__ == "__main__":
     game = ConnectFour(max_depth=4)
-    game.play_game_expecti()
+    game.play_game()
