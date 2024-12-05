@@ -145,6 +145,7 @@ class GUI(ConnectFour):
     def update_game_state(self):
         """Update the game state and check for a winner."""
         self.board = self.get_corrected_board()  # Update the board using the overridden method
+        self.draw_board()
 
     def game_loop(self):
         """Main game loop."""
@@ -158,22 +159,23 @@ class GUI(ConnectFour):
                     pygame.quit()
                     sys.exit()
 
-                if self.current_player == 2 and event.type == pygame.MOUSEBUTTONDOWN:
-                    self.handle_click(event.pos)
-                 # Handle the click for toggling the button
-                 
+                # Handle the minimax toggle button click separately
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     x, y = event.pos
                     # Check if the mouse click is within the Minimax toggle button
                     if self.SCREEN_WIDTH - 140 <= x <= self.SCREEN_WIDTH - 140 + 140 and 10 <= y <= 10 + 40:
                         self.toggle_minimax_mode()  # Toggle the mode when clicked
+                    elif self.current_player == 2:
+                        # Only handle the player's move if not clicking the toggle button
+                        self.handle_click(event.pos)
 
             if self.current_player == 1:
                 self.ai_turn_regular_minimax()
             elif self.current_player == 3: # 3 for alpha-beta
                 self.ai_turn_alphabeta_minimax()
             elif self.current_player == 4:    # 4 for expectiminmax
-                self.ai_turn_expected_minimax() 
+                self.ai_turn_expected_minimax()
+
 
 # Run the game
 if __name__ == "__main__":

@@ -549,7 +549,9 @@ class ConnectFour(NodeMixin):
                 # Choose one of the columns based on the probability distribution
                 outcome_col = self.expecticol(column)
                 
-                # Drop the piece in the chosen column based on misplacement probability
+                # Drop the piece in the chosen column based on misplacement probability if applicable 
+                while not  outcome_col in valid_moves:
+                    outcome_col = self.expecticol(column)
                 self.player1_board = self.drop_piece(self.player1_board, outcome_col)
 
                 board_string = self.generate_board_string()
@@ -578,8 +580,9 @@ class ConnectFour(NodeMixin):
 
                 # Choose one of the columns based on the probability distribution
                 outcome_col =  self.expecticol(column)
-
-                # Drop the piece in the chosen column based on misplacement probability
+                while not  outcome_col in valid_moves:
+                    outcome_col = self.expecticol(column)
+                    
                 self.player2_board = self.drop_piece(self.player2_board, outcome_col)
                 board_string= self.generate_board_string()
 
@@ -632,7 +635,7 @@ class ConnectFour(NodeMixin):
             self.player1_board = self.drop_piece(self.player1_board, move)
             self.display_tree() # Display the tree after the AI move
             ai_connect_4,player_connect_4=self.calculate_utility()                      
-            print(f"AI chooses column {move}\n ai connected {ai_connect_4}, player connected{player_connect_4}")
+            print(f"AI chooses column {move}\n ai connected {ai_connect_4}, player connected {player_connect_4}")
 
 
     def computer_turn_alphabeta(self):
@@ -642,7 +645,7 @@ class ConnectFour(NodeMixin):
         self.player1_board = self.drop_piece(self.player1_board, move)
         self.display_tree()
         ai_connect_4,player_connect_4=self.calculate_utility()                      
-        print(f"AI chooses column {move}\n ai connected {ai_connect_4}, player connected{player_connect_4}")
+        print(f"AI chooses column {move}\n ai connected {ai_connect_4}, player connected {player_connect_4}")
 
     def play_game(self):
         """Play the game."""
