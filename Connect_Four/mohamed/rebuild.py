@@ -4,7 +4,7 @@ import numpy as np
 import random
 
 class ConnectFour(NodeMixin):
-    def __init__(self, max_depth=4):
+    def __init__(self, max_depth=2):
         self.player1_board = 0b0  # Bitboard for player 1 player is ai
         self.player2_board = 0b0  # Bitboard for player 2
         self.column_heights = [0] * 7  # Column heights
@@ -12,7 +12,7 @@ class ConnectFour(NodeMixin):
         self.num_cols = 7
         self.max_depth = max_depth
         self.scores = [0, 0]  # Scores for player 1 and player 2
-        self.k = 3 # Max depth for the tree search
+        self.k = 2 # Max depth for the tree search
         self.tree_root = Node("Root")
         self.PLAYER_PIECE = 1
         self.AI_PIECE = 2 
