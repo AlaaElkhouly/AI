@@ -78,6 +78,8 @@ class GUI(ConnectFour):
 ##-----------------------------------------------------toggle ai  mode--------------------------------------------##
     def toggle_minimax_mode(self):
         self.minimax_mode = (self.minimax_mode + 1) % 3  # Toggle between 0, 1, and 2
+        
+        
                       
     def draw_minimax_toggle(self):
             """Draw the minimax toggle button."""
@@ -113,7 +115,8 @@ class GUI(ConnectFour):
         _, move = self.minimax(self.max_depth, True, self.tree_root)
         self.player1_board = self.drop_piece(self.player1_board, move)
         self.display_tree() # Display the tree after the AI move
-        ai_connect_4,player_connect_4=self.calculate_utility()                      
+        ai_connect_4,player_connect_4=self.calculate_utility() 
+        print(f"ai score is : {self.evaluate_board()}")                     
         print(f"AI chooses column {move}\n ai connected {ai_connect_4}, player connected{player_connect_4}")
         self.current_player = 2
         self.update_game_state()
@@ -125,8 +128,9 @@ class GUI(ConnectFour):
         _, move = self.minimax_with_alphabeta(self.max_depth, float('-inf'), float('inf'), True, self.tree_root)
         self.player1_board = self.drop_piece(self.player1_board, move)
         self.display_tree() # Display the tree after the AI move
-        ai_connect_4,player_connect_4=self.calculate_utility()                      
-        print(f"AI chooses column {move}\n ai connected {ai_connect_4}, player connected{player_connect_4}")
+        ai_connect_4,player_connect_4=self.calculate_utility()
+        print(f"ai score is : {self.evaluate_board()}")                      
+        print(f"AI chooses column {move}\n ai connected {ai_connect_4}, player connected {player_connect_4}")
         self.current_player = 2
         self.update_game_state()
         
@@ -137,8 +141,9 @@ class GUI(ConnectFour):
         _, move = self.expectiminimax(self.max_depth, True, self.tree_root)
         self.player1_board = self.drop_piece(self.player1_board, move)
         self.display_tree() # Display the tree after the AI move
-        ai_connect_4,player_connect_4=self.calculate_utility()                      
-        print(f"AI chooses column {move}\n ai connected {ai_connect_4}, player connected{player_connect_4}")
+        ai_connect_4,player_connect_4=self.calculate_utility()
+        print(f"ai score is : {self.evaluate_board()}")                      
+        print(f"AI chooses column {move}\n ai connected {ai_connect_4}, player connected {player_connect_4}")
         self.current_player = 2
         self.update_game_state()
 ##----------------------------------------------game loop------------------------------------------------------##
@@ -179,5 +184,5 @@ class GUI(ConnectFour):
 
 # Run the game
 if __name__ == "__main__":
-    game = GUI(max_depth=4)
+    game = GUI(max_depth=7)
     game.game_loop()

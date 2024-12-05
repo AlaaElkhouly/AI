@@ -4,7 +4,7 @@ import numpy as np
 import random
 
 class ConnectFour(NodeMixin):
-    def __init__(self, max_depth=5):
+    def __init__(self, max_depth=4):
         self.player1_board = 0b0  # Bitboard for player 1 player is ai
         self.player2_board = 0b0  # Bitboard for player 2
         self.column_heights = [0] * 7  # Column heights
