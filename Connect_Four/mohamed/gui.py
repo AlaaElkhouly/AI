@@ -78,12 +78,6 @@ class GUI(ConnectFour):
 ##-----------------------------------------------------toggle ai  mode--------------------------------------------##
     def toggle_minimax_mode(self):
         self.minimax_mode = (self.minimax_mode + 1) % 3  # Toggle between 0, 1, and 2
-        if self.minimax_mode==0:
-            self.current_player=1
-        elif self.minimax_mode==1:
-            self.current_player=3
-        elif self.minimax_mode==2:
-            self.current_player=4
         
         
                       
