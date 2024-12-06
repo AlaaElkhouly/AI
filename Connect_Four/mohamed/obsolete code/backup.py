@@ -261,5 +261,5 @@ class ConnectFour:
 
 # Run the game
 if __name__ == "__main__":
-    game = ConnectFour(max_depth=4)
+    game = ConnectFour(max_depth=5)
     game.play_game()

@@ -1,6 +1,6 @@
 import math
 import numpy as np
-
+import random
 
 class ConnectFour:
     def __init__(self, max_depth):
@@ -378,10 +378,6 @@ class ConnectFour:
         """Minimax with alpha-beta pruning."""
         if depth == 0 or not self.get_valid_moves():
             return self.evaluate_board(), None
-        
-        if (depth >= self.max_depth - self.k):
-            self.save_and_encode_tree()
-
 
         valid_moves = self.get_valid_moves()
         best_move = None
@@ -424,14 +420,8 @@ class ConnectFour:
         """Minimax without alpha-beta pruning."""
         if depth == 0 or not self.get_valid_moves():
             return self.evaluate_board(), None
-
-        # Save the board state if the current depth is within the upper k levels
-        if (depth >= self.max_depth - self.k):
-            self.save_and_encode_tree()
-
         valid_moves = self.get_valid_moves()
         best_move = None
-
         if maximizing_player:
             max_value = -math.inf
             for column in valid_moves:
@@ -463,6 +453,127 @@ class ConnectFour:
 
             ###add here ya alaa###
 
+    def get_probabilities(self,column):
+        if column == 0:
+            return {0: 0.6, 1: 0.4}
+        elif column == 6:
+            return {6: 0.6, 5: 0.4}
+        else:
+            return {column - 1: 0.2, column: 0.6, column + 1: 0.2}
+        
+    def expecticol(self,column):
+        rand = random.random()
+        if column==0:
+            if rand<= 0.4:
+                ecol=1
+            else:
+                ecol=0 
+        elif column==6:
+            if rand<= 0.4:
+                ecol=5
+            else:
+                ecol=6
+        else:
+            if rand<=0.2:
+                ecol=column-1
+            elif rand<=0.8:
+                 ecol=column
+            else:
+                 ecol=column+1     
+        return ecol
+
+
+    def player_turn_expecti(self):
+            """Handle player's move."""
+            while True:
+                try:
+                    move = self.expecticol(int(input("Your move (0-6): ")))
+                    if move not in self.get_valid_moves():
+                        print("Invalid move. Try again.")
+                    else:
+                        break
+                except ValueError:
+                    print("Please enter a number between 0 and 6.")
+            self.player1_board = self.drop_piece(self.player1_board, move)
+
+    def computer_turn_expecti(self):
+        print("AI is thinking...")
+        _, move = self.expectiminimax(self.max_depth, True)
+        self.player2_board = self.drop_piece(self.player2_board, move)
+        print(f"AI chooses column {move}")
+
+    def expectiminimax(self, depth, maximizing_player):
+        """Expected minimax to handle probabilistic moves and misplacement."""
+        if depth == 0 or not self.get_valid_moves():
+            return self.evaluate_board(), None
+
+        valid_moves = self.get_valid_moves()
+        best_move = None
+
+        if maximizing_player:
+            max_value = -math.inf
+            for column in valid_moves:
+                expected_value = 0
+
+                # Get possible outcome columns and their probabilities
+                probabilities = self.get_probabilities(column)
+
+                # Choose one of the columns based on the probability distribution
+                outcome_col = self.expecticol(column)
+                
+                # Drop the piece in the chosen column based on misplacement probability if applicable 
+                while not  outcome_col in valid_moves:
+                    outcome_col = self.expecticol(column)
+                self.player2_board = self.drop_piece(self.player2_board, outcome_col)
+
+                
+                value, _ = self.expectiminimax(depth - 1, False )
+                self.player2_board = self.undo_drop_piece(self.player2_board, outcome_col)
+                expected_value += probabilities[outcome_col] * value
+
+                if expected_value > max_value:
+                    max_value = expected_value
+                    best_move = outcome_col
+
+            return max_value, best_move
+        else:
+            min_value = math.inf
+            for column in valid_moves:
+                expected_value = 0
+
+                # Get possible outcome columns and their probabilities
+                probabilities = self.get_probabilities(column)
+
+                # Choose one of the columns based on the probability distribution
+                outcome_col =  self.expecticol(column)
+                while not  outcome_col in valid_moves:
+                    outcome_col = self.expecticol(column)
+                    
+                self.player1_board = self.drop_piece(self.player1_board, outcome_col)
+
+                value, _ = self.expectiminimax(depth - 1, True)
+                self.player1_board = self.undo_drop_piece(self.player1_board, outcome_col)
+                expected_value += probabilities[outcome_col] * value
+
+                if expected_value < min_value:
+                    min_value = expected_value
+                    best_move = outcome_col
+
+            return min_value, best_move
+        
+    def play_game_expecti(self):
+    #Play the game.'''
+        while True:
+            print(f"ai score is : {self.evaluate_board()}")
+            if not self.get_valid_moves():
+                print("Game over!")
+                break
+            # Player's turn
+            self.print_board()
+            self.player_turn_expecti()
+            # AI's turn
+            self.computer_turn_expecti()
+            self.post_scores()
 
 
 ###print board for user###--------------------------------------------------------------------------------
@@ -502,6 +613,13 @@ class ConnectFour:
         print(f"AI chooses column {move}")
         self.player2_board = self.drop_piece(self.player2_board, move)
 
+    def computer_turn_alpha_beta(self):
+        """Handle AI's move using Minimax."""
+        print("AI is thinking...")
+        _, move = self.minimax(self.max_depth, float('-inf'), float('inf'),  True)
+        print(f"AI chooses column {move}")
+        self.player2_board = self.drop_piece(self.player2_board, move)
+
     def post_scores(self):
         """Display the scores."""
         board=self.bitboard_to_array(self.num_rows,self.num_cols)
@@ -519,23 +637,40 @@ class ConnectFour:
             if not self.get_valid_moves():
                 print("game over")
                 break
-
             # Player's turn
             self.player_turn()
             self.clear_queue()
             self.post_scores()
            
-        
-
             # AI's turn
             self.computer_turn()
             self.decode_and_print_tree()
             self.post_scores()
+
+    def play_game_alpha_beta(self):
+        count=0
+        """Play the game."""
+        while True:
+            self.print_board()
+
+            if not self.get_valid_moves():
+                print("game over")
+                break
+            # Player's turn
+            self.player_turn()
+            self.clear_queue()
+            self.post_scores()
+           
+            # AI's turn
+            self.computer_turn_alpha_beta()
+            self.decode_and_print_tree()
+            self.post_scores()
+           
            
             
 
 
 # Run the game
 if __name__ == "__main__":
-    game = ConnectFour(max_depth=3)
-    game.play_game()
+    game = ConnectFour(max_depth=4)
+    game.play_game_expecti()

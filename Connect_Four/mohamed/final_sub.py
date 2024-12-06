@@ -12,7 +12,7 @@ class ConnectFour(NodeMixin):
         self.num_cols = 7
         self.max_depth = max_depth
         self.scores = [0, 0]  # Scores for player 1 and player 2
-        self.k = 0 # Max depth for the tree search
+        self.k = None # Max depth for the tree search
         self.tree_root = Node("Root")
         self.PLAYER_PIECE = 1
         self.AI_PIECE = 2 
@@ -493,7 +493,39 @@ class ConnectFour(NodeMixin):
                     min_value = value
                     best_move = column
             return min_value, best_move
+#---------------------------------------------------------------------------------no tree---------------------------------------------------------------------------------#
+    def minimax_no_tree(self, depth, maximizing_player):
+            """Minimax without alpha-beta pruning."""
+            if depth == 0 or not self.get_valid_moves():
+                return self.evaluate_board(), None
 
+            valid_moves = self.get_valid_moves()
+            best_move = None
+
+            if maximizing_player:
+                max_value = -math.inf
+                for column in valid_moves:
+                    self.player1_board = self.drop_piece(self.player1_board, column)
+                    value, _ = self.minimax_no_tree(depth - 1, False)  # No alpha-beta parameters
+                    self.player1_board = self.undo_drop_piece(self.player1_board, column)
+
+                    if value > max_value:
+                        max_value = value
+                        best_move = column
+
+                return max_value, best_move
+            else:
+                min_value = math.inf
+                for column in valid_moves:
+                    self.player2_board = self.drop_piece(self.player2_board, column)
+                    value, _ = self.minimax_no_tree(depth - 1, True)  # No alpha-beta parameters
+                    self.player2_board = self.undo_drop_piece(self.player2_board, column)
+
+                    if value < min_value:
+                        min_value = value
+                        best_move = column
+
+                return min_value, best_move
 #---------------------------------------------------------------------------------Alaa's Zone---------------------------------------------------------------------------------#
 
     def get_probabilities(self,column):
@@ -704,5 +736,5 @@ class ConnectFour(NodeMixin):
 
 # Run the game
 if __name__ == "__main__":
-    game = ConnectFour(max_depth=4)
-    game.play_game_expecti()
+    game = ConnectFour(max_depth=2)
+    game.play_game()

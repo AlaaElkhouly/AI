@@ -113,8 +113,9 @@ class GUI(ConnectFour):
         _, move = self.minimax(self.max_depth, True, self.tree_root)
         self.player1_board = self.drop_piece(self.player1_board, move)
         self.display_tree() # Display the tree after the AI move
-        ai_connect_4,player_connect_4=self.calculate_utility()                      
-        print(f"AI chooses column {move}\n ai connected {ai_connect_4}, player connected{player_connect_4}")
+        ai_connect_4,player_connect_4=self.calculate_utility()
+        current_score=self.evaluate_board()                         
+        print(f"AI chooses column {move}\n ai connected {ai_connect_4}, player connected{player_connect_4} \n current score of ai is {current_score}")
         self.current_player = 2
         self.update_game_state()
         
@@ -125,8 +126,9 @@ class GUI(ConnectFour):
         _, move = self.minimax_with_alphabeta(self.max_depth, float('-inf'), float('inf'), True, self.tree_root)
         self.player1_board = self.drop_piece(self.player1_board, move)
         self.display_tree() # Display the tree after the AI move
-        ai_connect_4,player_connect_4=self.calculate_utility()                      
-        print(f"AI chooses column {move}\n ai connected {ai_connect_4}, player connected{player_connect_4}")
+        ai_connect_4,player_connect_4=self.calculate_utility()  
+        current_score=self.evaluate_board()                       
+        print(f"AI chooses column {move}\n ai connected {ai_connect_4}, player connected{player_connect_4} \n current score of ai is {current_score}")
         self.current_player = 2
         self.update_game_state()
         
@@ -137,8 +139,9 @@ class GUI(ConnectFour):
         _, move = self.expectiminimax(self.max_depth, True, self.tree_root)
         self.player1_board = self.drop_piece(self.player1_board, move)
         self.display_tree() # Display the tree after the AI move
-        ai_connect_4,player_connect_4=self.calculate_utility()                      
-        print(f"AI chooses column {move}\n ai connected {ai_connect_4}, player connected{player_connect_4}")
+        ai_connect_4,player_connect_4=self.calculate_utility() 
+        current_score=self.evaluate_board()                     
+        print(f"AI chooses column {move}\n ai connected {ai_connect_4}, player connected{player_connect_4} \n current score of ai is {current_score}")
         self.current_player = 2
         self.update_game_state()
 ##----------------------------------------------game loop------------------------------------------------------##
@@ -179,5 +182,5 @@ class GUI(ConnectFour):
 
 # Run the game
 if __name__ == "__main__":
-    game = GUI(max_depth=4)
+    game = GUI(max_depth=6)
     game.game_loop()
