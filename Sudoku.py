@@ -1,12 +1,12 @@
 import tkinter as tk
 from tkinter import messagebox
 
-variables = [(i, j) for i in range(9) for j in range(9)]  #List of all the cells
-domains = {var: list(range(1, 10)) for var in variables}  # possible values that a variable can take
-neighbors = {(i, j): set((i, jj) for jj in range(9)) |
-                     set((ii, j) for ii in range(9)) |
+variables = [(i, j) for i in range(9) for j in range(9)]              #List of all the cells
+domains = {var: list(range(1, 10)) for var in variables}              # possible values that a variable can take
+neighbors = {(i, j): set((i, jj) for jj in range(9)) |  # same row
+                     set((ii, j) for ii in range(9)) |  # same column                        
                      set((ii, jj) for ii in range(i // 3 * 3, (i // 3 + 1) * 3) for jj in
-                         range(j // 3 * 3, (j // 3 + 1) * 3)) - {(i, j)}
+                         range(j // 3 * 3, (j // 3 + 1) * 3)) - {(i, j)}       # same 3x3 subgrid
              for i in range(9) for j in range(9)}
 
 class CSP:
