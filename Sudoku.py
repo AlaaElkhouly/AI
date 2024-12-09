@@ -1,8 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox
 
-variables = [(i, j) for i in range(9) for j in range(9)]
-domains = {var: list(range(1, 10)) for var in variables}
+variables = [(i, j) for i in range(9) for j in range(9)]  #List of all the cells
+domains = {var: list(range(1, 10)) for var in variables}  # possible values that a variable can take
 neighbors = {(i, j): set((i, jj) for jj in range(9)) |
                      set((ii, j) for ii in range(9)) |
                      set((ii, jj) for ii in range(i // 3 * 3, (i // 3 + 1) * 3) for jj in
