@@ -120,7 +120,7 @@ class SudokuGUI:
     def generate_sudoku(self):
         """Generate a Sudoku puzzle using the dokusan library."""
         self.clear_grid()
-        puzzle = str(generators.random_sudoku(avg_rank=1000))  # Adjust avg_rank for difficulty
+        puzzle = str(generators.random_sudoku(avg_rank=100))  # Adjust avg_rank for difficulty
         self.sudoku_csp.domains = {var: list(range(1, 10)) for var in self.sudoku_csp.variables}
         for i in range(9):
             for j in range(9):
