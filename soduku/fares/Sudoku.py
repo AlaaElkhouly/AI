@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
-
+#____________________Solves Puzzles the user enters_________________#
 variables = [(i, j) for i in range(9) for j in range(9)]              #List of all the cells
 domains = {var: list(range(1, 10)) for var in variables}              # possible values that a variable can take
 neighbors = {(i, j): set((i, jj) for jj in range(9)) |  # same row

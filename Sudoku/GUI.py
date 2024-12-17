@@ -1,12 +1,3 @@
-#set of variables places 1-81
-#domain list of possible values to fill variables with [1-9]
-#constraints rules that do not allow you to assign some of the values to the variables
-#_____________________Fills the board____________________________#
-'''empty_board = '0' * 81
-index=int("5")
-num="7"
-empty_board = empty_board[:index] + num + empty_board[index + 1:]
-print(empty_board)'''
 #_________________________GUI____________________________________#
 import tkinter as tk
 
@@ -21,6 +12,9 @@ def restart():
     for i in range(9):
         for j in range(9):
             grid_entries[i][j].delete(0, tk.END)
+
+def solve():
+    return 0
 
 # Create the main window
 root = tk.Tk()
@@ -64,8 +58,7 @@ for i in range(9):
         entry.grid(padx=(border_left, border_right), pady=(border_top, border_bottom))
         row_entries.append(entry)
     grid_entries.append(row_entries)
-    def solve():
-        return 0
+
 # Create a frame for the buttons
 button_frame = tk.Frame(root)
 button_frame.pack(pady=10)
