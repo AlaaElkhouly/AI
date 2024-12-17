@@ -28,10 +28,14 @@ class CSP:
         return min(unassigned, key=lambda var: len(self.domains[var]))
 
     def order_domain_values(self, variable, assignment):
-        """Order domain values using the least-constraining value heuristic."""
-        return sorted(self.domains[variable], key=lambda value: sum(
-            value in self.domains[neighbor] for neighbor in self.neighbors[variable]
-        ))
+        """Order domain values for `variable` based on the current `assignment`."""
+        return sorted(
+            self.domains[variable],
+            key=lambda value: sum(
+                self.is_consistent(neighbor, value, assignment)
+                for neighbor in self.neighbors[variable]
+            )
+        )
 
     def inference(self, variable, value, assignment):
         """Apply AC-3 algorithm to enforce arc consistency."""
