@@ -182,5 +182,5 @@ class GUI(ConnectFour):
 
 # Run the game
 if __name__ == "__main__":
-    game = GUI(max_depth=6)
+    game = GUI(max_depth=4)
     game.game_loop()

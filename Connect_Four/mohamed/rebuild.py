@@ -12,7 +12,7 @@ class ConnectFour(NodeMixin):
         self.num_cols = 7
         self.max_depth = max_depth
         self.scores = [0, 0]  # Scores for player 1 and player 2
-        self.k = 0 # Max depth for the tree search
+        self.k = 3 # Max depth for the tree search
         self.tree_root = Node("Root")
         self.PLAYER_PIECE = 1
         self.AI_PIECE = 2 
