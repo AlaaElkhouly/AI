@@ -1,85 +1,134 @@
+import queue
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import messagebox, ttk, Frame
+from dokusan import generators
 
-# AC-3 Algorithm
+# Variable Class
+class Variable:
+    def __init__(self, domain=None, value=0):
+        self.value = value
+        self.domain = domain if domain is not None else [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+    def __str__(self):
+        return str(self.value)
+
+# State Class
 class State:
     def __init__(self, grid):
         self.grid = grid
-        self.variables = self.initialize_variables()
+        self.variables = []
+        self.constraints = []
+        for i in range(9):
+            tmp = []
+            for j in range(9):
+                if grid[i][j] == 0:
+                    tmp.append(Variable())
+                else:
+                    tmp.append(Variable(domain=[grid[i][j]], value=grid[i][j]))
+            self.variables.append(tmp)
+        self.createArcs()
 
-    def initialize_variables(self):
-        variables = {}
+    def createArcs(self):
         for i in range(9):
             for j in range(9):
-                if self.grid[i][j] == 0:
-                    variables[(i, j)] = list(range(1, 10))  # All possible values
-                else:
-                    variables[(i, j)] = [self.grid[i][j]]  # Single value for filled cells
-        return variables
-
-    def get_neighbors(self, xi):
-        neighbors = []
-        i, j = xi
-        for row in range(9):
-            if row != i:
-                neighbors.append((row, j))
-        for col in range(9):
-            if col != j:
-                neighbors.append((i, col))
-        # 3x3 block neighbors
-        block_row, block_col = i // 3, j // 3
-        for r in range(block_row * 3, (block_row + 1) * 3):
-            for c in range(block_col * 3, (block_col + 1) * 3):
-                if (r, c) != (i, j):
-                    neighbors.append((r, c))
-        return neighbors
+                for k in range(9):
+                    if j != k:  # Row constraints
+                        self.constraints.append((self.variables[i][j], self.variables[i][k]))
+                    if i != k:  # Column constraints
+                        self.constraints.append((self.variables[i][j], self.variables[k][j]))
+                    if not (i == 3 * (i // 3) + (k // 3) and j == 3 * (j // 3) + k % 3):  # Block constraints
+                        self.constraints.append((self.variables[i][j], self.variables[3 * (i // 3) + (k // 3)][3 * (j // 3) + k % 3]))
 
     def ac3(self):
-        queue = [(xi, xj) for xi in self.variables for xj in self.get_neighbors(xi)]
+        queue = self.create_queue()
         while queue:
             (xi, xj) = queue.pop(0)
             if self.revise(xi, xj):
-                if len(self.variables[xi]) == 0:
-                    return False  # Failure
-                for xk in self.get_neighbors(xi):
-                    if xk != xj:
-                        queue.append((xk, xi))
+                if len(xi.domain) == 0:  # If domain is empty, no solution
+                    return False
+                for neighbor in self.get_neighbors(xi):
+                    if neighbor != xj:
+                        queue.append((neighbor, xi))
         return True
+
+    def create_queue(self):
+        queue = []
+        for xi, xj in self.constraints:
+            queue.append((xi, xj))
+        return queue
+    
+    def print_board(self):
+        for i, row in enumerate(self.grid):
+            if i % 3 == 0 and i != 0:  # Print a line after every 3rd row (for 3x3 grid separation)
+                print("-" * 21)  # Line to separate blocks
+            for j, cell in enumerate(row):
+                if j % 3 == 0 and j != 0:  # Print a vertical line after every 3rd column
+                    print("|", end=" ")
+                # Print the cell value; if it's 0 (empty), print a dot '.'
+                print(str(cell) if cell != 0 else '.', end=" ")
+            print()  # Move to the next line after printing a row
+
 
     def revise(self, xi, xj):
         revised = False
-        for x in self.variables[xi]:
-            if not any(y != x for y in self.variables[xj]):
-                self.variables[xi].remove(x)
+        for x in xi.domain[:]:  # Make a copy to iterate safely
+            if not self.has_support(x, xi, xj):
+                xi.domain.remove(x)
                 revised = True
+                print(f"\n domain revised: ({xi}, {xj}) -> {xi.domain}")  # Print the arc and updated domain
         return revised
 
-# Backtracking Solver with AC-3
-def backtracking_solver_with_ac3(state):
-    if all(len(domain) == 1 for domain in state.variables.values()):
-        return True  # Solved
-    var = select_unassigned_variable(state)
-    for value in state.variables[var]:
-        if is_consistent(state, var, value):
-            state.grid[var[0]][var[1]] = value  # Assign value
-            state.ac3()  # Apply AC-3 after assignment
-            if backtracking_solver_with_ac3(state):
+
+    def has_support(self, x, xi, xj):
+        for y in xj.domain:
+            if x != y:
                 return True
-            state.grid[var[0]][var[1]] = 0  # Unassign
-    return False
+        return False
 
-def select_unassigned_variable(state):
-    unassigned = [(var, len(state.variables[var])) for var in state.variables if len(state.variables[var]) > 1]
-    return min(unassigned, key=lambda x: x[1])[0]  # Select variable with the smallest domain
+    def get_neighbors(self, var):
+        neighbors = []
+        for xi, xj in self.constraints:
+            if xi == var:
+                neighbors.append(xj)
+            elif xj == var:
+                neighbors.append(xi)
+        return neighbors
+    
+    
 
-def is_consistent(state, var, value):
-    # Check if assigning `value` to `var` doesn't violate constraints
-    for neighbor in state.get_neighbors(var):
-        if value in state.variables[neighbor]:
+# Solver Functions
+def is_valid_move(grid, row, col, num):
+    for i in range(9):
+        if grid[row][i] == num or grid[i][col] == num:
             return False
+    start_row, start_col = 3 * (row // 3), 3 * (col // 3)
+    for i in range(3):
+        for j in range(3):
+            if grid[start_row + i][start_col + j] == num:
+                return False
     return True
 
-# GUI Class
+def backtracking_solver(state, row=0, col=0):
+    if col == 9:  # Move to the next row
+        if row == 8:
+            return True
+        row += 1
+        col = 0
+
+    if state.variables[row][col].value > 0:  # Skip pre-filled cells
+        return backtracking_solver(state, row, col + 1)
+
+    for num in range(1, 10):
+        if is_valid_move(state.grid, row, col, num):
+            state.grid[row][col] = num
+            state.variables[row][col] = Variable(domain=[num], value=num)
+            if backtracking_solver(state, row, col + 1):
+                return True
+            state.grid[row][col] = 0
+            state.variables[row][col] = Variable()
+    return False
+
+# Enhanced GUI Class
 class SudokuGUI:
     def __init__(self, root):
         self.root = root
@@ -89,30 +138,39 @@ class SudokuGUI:
         self.create_widgets()
 
     def create_widgets(self):
-        # Frame for the grid
-        grid_frame = tk.Frame(self.root, bg="#333333", bd=5, relief="ridge")
+        # Frame for the grid with spacing
+        grid_frame = Frame(self.root, bg="#333333", bd=5, relief="ridge")
         grid_frame.pack(padx=20, pady=20)
 
-        # Create Sudoku grid with styled cells
+        # Create Sudoku grid with styled cells and spacing for 3x3 grids
         for i in range(9):
             for j in range(9):
-                padx = (8, 16) if j % 3 == 2 else (4, 4)
-                pady = (8, 16) if i % 3 == 2 else (4, 4)
+                # Padding for spacing between 3x3 grids
+                padx = (8, 16) if j % 3 == 2 else (4, 4)  # Extra spacing on right side for every 3rd column
+                pady = (8, 16) if i % 3 == 2 else (4, 4)  # Extra spacing below every 3rd row
+
+                # Background color and styling
                 bg_color = "#fdfdfd" if (i // 3 + j // 3) % 2 == 0 else "#f0f0f0"
                 cell = tk.Entry(grid_frame, width=3, font=('Arial', 20), justify='center', bd=1, relief='solid',
                                 bg=bg_color, fg="#333333", highlightbackground="#aaa", highlightthickness=1)
                 cell.grid(row=i, column=j, padx=padx, pady=pady)
                 self.cells[i][j] = cell
 
-        # Control Frame for buttons
-        control_frame = tk.Frame(self.root, bg="#f8f9fa")
+        # Control Frame for buttons and dropdown
+        control_frame = Frame(self.root, bg="#f8f9fa")
         control_frame.pack(pady=10)
+
+        # Difficulty selection
+        tk.Label(control_frame, text="Difficulty:", font=('Arial', 12), bg="#f8f9fa").grid(row=0, column=0, padx=5)
+        self.difficulty_var = ttk.Combobox(control_frame, values=["Easy", "Medium", "Hard"], state="readonly", width=10)
+        self.difficulty_var.current(0)
+        self.difficulty_var.grid(row=0, column=1, padx=5)
 
         # Buttons
         tk.Button(control_frame, text="Generate Puzzle", command=self.generate_puzzle, bg="#28a745", fg="white",
-                  font=('Arial', 12), width=15).grid(row=0, column=0, padx=5)
+                  font=('Arial', 12), width=15).grid(row=0, column=2, padx=5)
         tk.Button(control_frame, text="Solve Puzzle", command=self.solve_sudoku, bg="#007bff", fg="white",
-                  font=('Arial', 12), width=15).grid(row=0, column=1, padx=5)
+                  font=('Arial', 12), width=15).grid(row=0, column=3, padx=5)
 
     def get_grid(self):
         grid = []
@@ -132,31 +190,26 @@ class SudokuGUI:
                     self.cells[i][j].insert(0, str(grid[i][j]))
 
     def generate_puzzle(self):
-        # Puzzle generation logic (for simplicity, we can use a fixed puzzle)
-        puzzle = [
-            [5, 3, 0, 0, 7, 0, 0, 0, 0],
-            [6, 0, 0, 1, 9, 5, 0, 0, 0],
-            [0, 9, 8, 0, 0, 0, 0, 6, 0],
-            [8, 0, 0, 0, 6, 0, 0, 0, 3],
-            [4, 0, 0, 8, 0, 3, 0, 0, 1],
-            [7, 0, 0, 0, 2, 0, 0, 0, 6],
-            [0, 6, 0, 0, 0, 0, 2, 8, 0],
-            [0, 0, 0, 4, 1, 9, 0, 0, 5],
-            [0, 0, 0, 0, 8, 0, 0, 7, 9]
-        ]
-        self.set_grid(puzzle)
+        difficulty = self.difficulty_var.get()
+        avg_rank = {"Easy": 10, "Medium": 100, "Hard": 10000000}.get(difficulty, 20)
+        puzzle = generators.random_sudoku(avg_rank=avg_rank)
+        grid = [[int(str(puzzle)[i * 9 + j]) for j in range(9)] for i in range(9)]
+        self.set_grid(grid)
 
     def solve_sudoku(self):
         grid = self.get_grid()
         state = State(grid)
-        if backtracking_solver_with_ac3(state):
+        if state.ac3() and backtracking_solver(state):
             self.set_grid(state.grid)
             messagebox.showinfo("Success", "Sudoku Solved Successfully!")
         else:
-            messagebox.showerror("Error", "No solution exists for this Sudoku.")
+            messagebox.showerror("Error", "No solution exists.")
 
-# Main code to run the GUI
-if __name__ == "__main__":
+# Main Application
+def main():
     root = tk.Tk()
     gui = SudokuGUI(root)
     root.mainloop()
+
+if __name__ == "__main__":
+    main()
