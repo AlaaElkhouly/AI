@@ -1,4 +1,4 @@
-#Prints All
+#Only Prints Missing
 import queue
 import tkinter as tk
 from tkinter import messagebox, ttk, Frame
@@ -20,11 +20,13 @@ class State:
         self.grid = grid
         self.variables = []
         self.constraints = []
+        self.empty_cells = []  # Track initially empty cells
         for i in range(9):
             tmp = []
             for j in range(9):
                 if grid[i][j] == 0:
                     tmp.append(Variable())
+                    self.empty_cells.append((i, j))  # Store coordinates of empty cells
                 else:
                     tmp.append(Variable(domain=[grid[i][j]], value=grid[i][j]))
             self.variables.append(tmp)
@@ -87,12 +89,10 @@ class State:
         return neighbors
 
     def show_domains(self, step):
-        print(f"Step {step}: Domains after applying arc consistency:")
-        for i in range(9):
-            for j in range(9):
-                print(f"({i}, {j}): {self.variables[i][j].domain}", end=" | ")
-            print()
-        print("-" * 50)
+        print(f"Step {step}: Domains after applying arc consistency (only initially empty cells):")
+        for i, j in self.empty_cells:
+            print(f"({i}, {j}): {self.variables[i][j].domain}", end=" | ")
+        print("\n" + "-" * 50)
 
     def update_grid(self):
         for i in range(9):
@@ -224,4 +224,4 @@ def main():
     root.mainloop()
 
 if __name__ == "__main__":
-    main() 
+    main()
