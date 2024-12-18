@@ -27,7 +27,7 @@ class CSP:
         unassigned = [v for v in self.variables if v not in assignment]
         return min(unassigned, key=lambda var: len(self.domains[var]))
 
-    def order_domain_values(self, variable, assignment):
+  '''  def order_domain_values(self, variable, assignment):
         """Order domain values for `variable` based on the current `assignment`."""
         return sorted(
             self.domains[variable],
@@ -58,14 +58,14 @@ class CSP:
                 self.domains[Xi].remove(x)
                 revised = True
         return revised
-
+'''
     def backtrack(self, assignment={}):
         """Perform backtracking search."""
         if len(assignment) == len(self.variables):
             return assignment
 
         variable = self.select_unassigned_variable(assignment)
-        for value in self.order_domain_values(variable, assignment):
+        for value in range(1,10):
             if self.is_consistent(variable, value, assignment):
                 assignment[variable] = value
                 result = self.backtrack(assignment)
