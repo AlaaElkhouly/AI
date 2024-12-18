@@ -41,6 +41,7 @@ class State:
 
     def ac3(self, show_steps=False):
         queue = self.create_queue()
+        step = 0
         while queue:
             (xi, xj) = queue.pop(0)
             if self.revise(xi, xj):
@@ -50,7 +51,8 @@ class State:
                     if neighbor != xj:
                         queue.append((neighbor, xi))
             if show_steps:
-                self.print_domains()
+                step += 1
+                self.show_domains(step)
         return True
 
     def create_queue(self):
@@ -82,21 +84,20 @@ class State:
                 neighbors.append(xi)
         return neighbors
 
+    def show_domains(self, step):
+        print(f"Step {step}: Domains after applying arc consistency:")
+        for i in range(9):
+            for j in range(9):
+                print(f"({i}, {j}): {self.variables[i][j].domain}", end=" | ")
+            print()
+        print("-" * 50)
+
     def update_grid(self):
         for i in range(9):
             for j in range(9):
-                if len(self.variables[i][j].domain) == 1:
-                    value = self.variables[i][j].domain[0]
-                    self.variables[i][j].value = value
-                    self.grid[i][j] = value
-
-    def print_domains(self):
-        print("Current Domains:")
-        for i in range(9):
-            for j in range(9):
-                print(f"({i},{j}): {self.variables[i][j].domain}", end=' | ')
-            print()  # New line for each row
-        print("-" * 50)
+                if len(self.variables[i][j].domain) == 1 and self.variables[i][j].value == 0:
+                    self.variables[i][j].value = self.variables[i][j].domain[0]
+                    self.grid[i][j] = self.variables[i][j].value
 
 # Solver Functions
 def is_valid_move(grid, row, col, num):
@@ -130,23 +131,6 @@ def backtracking_solver(state, row=0, col=0):
             state.variables[row][col] = Variable()
     return False
 
-def solve_with_ac3_and_backtracking(state):
-    while True:
-        ac3_result = state.ac3(show_steps=True)  # Show AC-3 steps
-        state.update_grid()  # Update grid based on reduced domains
-        if not ac3_result:
-            return False
-
-        all_singleton = all(len(var.domain) == 1 for row in state.variables for var in row)
-        if all_singleton:  # If all domains are singletons, puzzle is solved
-            return True
-
-        # If AC-3 alone cannot solve, use backtracking for remaining cells
-        if backtracking_solver(state):
-            return True
-
-    return False
-
 # Enhanced GUI Class
 class SudokuGUI:
     def __init__(self, root):
@@ -164,9 +148,11 @@ class SudokuGUI:
         # Create Sudoku grid with styled cells and spacing for 3x3 grids
         for i in range(9):
             for j in range(9):
+                # Padding for spacing between 3x3 grids
                 padx = (8, 16) if j % 3 == 2 else (4, 4)  # Extra spacing on right side for every 3rd column
                 pady = (8, 16) if i % 3 == 2 else (4, 4)  # Extra spacing below every 3rd row
 
+                # Background color and styling
                 bg_color = "#fdfdfd" if (i // 3 + j // 3) % 2 == 0 else "#f0f0f0"
                 cell = tk.Entry(grid_frame, width=3, font=('Arial', 20), justify='center', bd=1, relief='solid',
                                 bg=bg_color, fg="#333333", highlightbackground="#aaa", highlightthickness=1)
@@ -216,9 +202,13 @@ class SudokuGUI:
     def solve_sudoku(self):
         grid = self.get_grid()
         state = State(grid)
-        if solve_with_ac3_and_backtracking(state):
-            self.set_grid(state.grid)
-            messagebox.showinfo("Success", "Sudoku Solved Successfully!")
+        if state.ac3(show_steps=True):  # Show Arc Consistency Steps
+            state.update_grid()
+            if backtracking_solver(state):
+                self.set_grid(state.grid)
+                messagebox.showinfo("Success", "Sudoku Solved Successfully!")
+            else:
+                messagebox.showerror("Error", "No solution exists.")
         else:
             messagebox.showerror("Error", "No solution exists.")
 
