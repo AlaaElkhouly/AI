@@ -175,7 +175,7 @@ class SudokuGUI:
 
     def generate_puzzle(self):
         difficulty = self.difficulty_var.get()
-        avg_rank = {"Easy": 10, "Medium": 100, "Hard": 1000000}.get(difficulty, 20)
+        avg_rank = {"Easy": 10, "Medium": 100, "Hard": 10000000}.get(difficulty, 20)
         puzzle = generators.random_sudoku(avg_rank=avg_rank)
         grid = [[int(str(puzzle)[i * 9 + j]) for j in range(9)] for i in range(9)]
         self.set_grid(grid)
