@@ -214,7 +214,7 @@ class SudokuGUI:
         self.status_var.set("Generating Sudoku puzzle...")
         self.root.update_idletasks()  # Refresh GUI
         difficulty = self.difficulty_var.get()
-        avg_rank = {"Easy": 10, "Medium": 100, "Hard": 1000000}.get(difficulty, 20)
+        avg_rank = {"Easy": 50, "Medium": 100, "Hard": 1000000}.get(difficulty, 20)
         puzzle = generators.random_sudoku(avg_rank=avg_rank)
         grid = [[int(str(puzzle)[i * 9 + j]) for j in range(9)] for i in range(9)]
         self.set_grid(grid)
@@ -226,7 +226,7 @@ class SudokuGUI:
         grid = self.get_grid()
         state = State(grid)
         start_time = time.time()  # Start the timer
-        if state.ac3(show_steps=1):  # Show Arc Consistency Steps
+        if state.ac3(show_steps=0):  # Show Arc Consistency Steps
             state.update_grid()
             if backtracking_solver(state):
                 end_time = time.time()  # End the timer
