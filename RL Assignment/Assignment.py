@@ -1,8 +1,7 @@
 import numpy as np
-
 # Constants
 GRID_SIZE = 3
-DISCOUNT_FACTOR = 0.9  # Reduced discount factor to limit influence of future rewards
+DISCOUNT_FACTOR = 0.9
 ACTIONS = ['Up', 'Down', 'Right', 'Left']
 ACTION_PROBABILITIES = {
     'intended': 0.8,  # Probability of moving in the intended direction
@@ -154,7 +153,7 @@ def main():
         values, policy = value_iteration(rewards)
 
         print("Optimal Values:")
-        print(np.round(values, 2))  # Rounded for better readability
+        print(values)
 
         print("Optimal Policy:")
         for row in policy:
@@ -164,7 +163,7 @@ def main():
         values, policy = policy_iteration(rewards)
 
         print("Optimal Values:")
-        print(np.round(values, 2))  # Rounded for better readability
+        print(values)
 
         print("Optimal Policy:")
         for row in policy:
