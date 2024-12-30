@@ -47,9 +47,9 @@ def policy_iteration(rewards, discount_factor=0.99, theta=1e-6):
                     next_state = (state[0] + dx, state[1] + dy)
                     
                     if 0 <= next_state[0] < grid_size and 0 <= next_state[1] < grid_size:
-                        next_value = rewards[next_state] + discount_factor * values[next_state]
+                        next_value = round(rewards[next_state] + discount_factor * values[next_state],1)
                     else:
-                        next_value = rewards[state]  # Stay in the same state if out of bounds
+                        next_value = round(rewards[state],1)  # Stay in the same state if out of bounds
                     
                     new_values[state] = next_value
                     delta = max(delta, abs(values[state] - new_values[state]))
@@ -103,9 +103,9 @@ def value_iteration(rewards, discount_factor=0.99, theta=1e-6):
                     dx, dy = DIRECTION_DELTAS[action]
                     next_state = (state[0] + dx, state[1] + dy)
                     if 0 <= next_state[0] < grid_size and 0 <= next_state[1] < grid_size:
-                        next_value = rewards[next_state] + discount_factor * values[next_state]
+                        next_value = round(rewards[next_state] + discount_factor * values[next_state],1)
                     else:
-                        next_value = rewards[state]  # Stay in the same state if out of bounds
+                        next_value = round(rewards[state],1)  # Stay in the same state if out of bounds
                     action_values[action] = next_value
                 # Find the maximum value and update
                 best_action = max(action_values, key=action_values.get)
