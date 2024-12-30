@@ -1,5 +1,4 @@
 '''
-Policy values are greater by 5 than value values
 both are different from other code values
 no randomness
 '''
@@ -13,7 +12,7 @@ DIRECTION_DELTAS = {'↑': -3,'↓': 3,'→': 1,'←': -1}
 # Value Iteration
 def value_iteration(rewards, discount_factor=0.99, theta=1e-6):
     values = 9*[0]  # Initialize state values
-    policy = 9*['↑']  # Initialize with arbitrary actions
+    policy = 9*['↑']  # Initialize with random actions of choice
 
     while True:
         delta = 0
